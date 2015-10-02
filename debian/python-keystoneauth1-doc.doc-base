@@ -1,0 +1,9 @@
+Document: python-keystoneauth1-doc
+Title: keystoneauth1 Documentation
+Author: N/A
+Abstract: Sphinx documentation for keystoneauth1
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/python-keystoneauth1-doc/html/index.html
+Files: /usr/share/doc/python-keystoneauth1-doc/html/*
