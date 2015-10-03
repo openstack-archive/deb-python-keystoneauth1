@@ -67,7 +67,7 @@ Depends: python-iso8601,
          python-six (>= 1.9.0),
          python-stevedore (>= 1.5.0),
          ${misc:Depends},
-         ${python: Depends},
+         ${python:Depends},
 Suggests: python-keystoneauth1-doc,
 Description: authentication library for OpenStack Identity - Python 2.7
  Keystoneauth provides a standard way to do authentication and service requests
@@ -84,7 +84,7 @@ Depends: python3-iso8601,
          python3-six (>= 1.9.0),
          python3-stevedore (>= 1.5.0),
          ${misc:Depends},
-         ${python3: Depends},
+         ${python3:Depends},
 Suggests: python-keystoneauth1-doc,
 Description: authentication library for OpenStack Identity - Python 3.x
  Keystoneauth provides a standard way to do authentication and service requests
