@@ -73,7 +73,7 @@ Depends: python-iso8601,
          ${python:Depends},
 Suggests: python-keystoneauth1-doc,
 Description: authentication library for OpenStack Identity - Python 2.7
- Keystoneauth is a library library that contains tools for authenticating with
+ Keystoneauth is a library that contains tools for authenticating with
  OpenStack Clients. These tools include: authentication plugins (password,
  token, and federation based); discovery mechanisms to determineversion support
  for OpenStack clouds; and a session used to maintain client settings across
@@ -94,7 +94,7 @@ Depends: python3-iso8601,
          ${python3:Depends},
 Suggests: python-keystoneauth1-doc,
 Description: authentication library for OpenStack Identity - Python 3.x
- Keystoneauth is a library library that contains tools for authenticating with
+ Keystoneauth is a library that contains tools for authenticating with
  OpenStack Clients. These tools include: authentication plugins (password,
  token, and federation based); discovery mechanisms to determineversion support
  for OpenStack clouds; and a session used to maintain client settings across
@@ -109,7 +109,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends},
 Description: authentication library for OpenStack Identity - doc
- Keystoneauth is a library library that contains tools for authenticating with
+ Keystoneauth is a library that contains tools for authenticating with
  OpenStack Clients. These tools include: authentication plugins (password,
  token, and federation based); discovery mechanisms to determineversion support
  for OpenStack clouds; and a session used to maintain client settings across
