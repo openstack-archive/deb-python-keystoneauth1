@@ -13,7 +13,7 @@
 from keystoneauth1.identity.v3 import base
 
 
-__all__ = ['TokenMethod', 'Token']
+__all__ = ('TokenMethod', 'Token')
 
 
 class TokenMethod(base.AuthMethod):
@@ -27,6 +27,9 @@ class TokenMethod(base.AuthMethod):
     def get_auth_data(self, session, auth, headers, **kwargs):
         headers['X-Auth-Token'] = self.token
         return 'token', {'id': self.token}
+
+    def get_cache_id_elements(self):
+        return {'token_token': self.token}
 
 
 class Token(base.AuthConstructor):

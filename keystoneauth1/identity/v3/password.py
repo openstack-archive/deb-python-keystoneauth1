@@ -13,7 +13,7 @@
 from keystoneauth1.identity.v3 import base
 
 
-__all__ = ['PasswordMethod', 'Password']
+__all__ = ('PasswordMethod', 'Password')
 
 
 class PasswordMethod(base.AuthMethod):
@@ -46,6 +46,10 @@ class PasswordMethod(base.AuthMethod):
                 user['domain'] = {'name': self.user_domain_name}
 
         return 'password', {'user': user}
+
+    def get_cache_id_elements(self):
+        return dict(('password_%s' % p, getattr(self, p))
+                    for p in self._method_parameters)
 
 
 class Password(base.AuthConstructor):

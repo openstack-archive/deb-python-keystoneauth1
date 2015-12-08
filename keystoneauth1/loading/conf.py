@@ -21,10 +21,10 @@ _section_help = 'Config Section from which to load plugin specific options'
 _AUTH_SECTION_OPT = opts.Opt('auth_section', help=_section_help)
 
 
-__all__ = ['get_common_conf_options',
+__all__ = ('get_common_conf_options',
            'get_plugin_conf_options',
            'register_conf_options',
-           'load_from_conf_options']
+           'load_from_conf_options')
 
 
 def get_common_conf_options():
@@ -42,15 +42,25 @@ def get_common_conf_options():
     return [_AUTH_TYPE_OPT._to_oslo_opt(), _AUTH_SECTION_OPT._to_oslo_opt()]
 
 
-def get_plugin_conf_options(name):
+def get_plugin_conf_options(plugin):
     """Get the oslo_config options for a specific plugin.
 
     This will be the list of config options that is registered and loaded by
     the specified plugin.
 
+    :param plugin: The name of the plugin loader or a plugin loader object
+    :type plugin: str or keystoneauth1._loading.BaseLoader
+
     :returns: A list of oslo_config options.
     """
-    return [o._to_oslo_opt() for o in base.get_plugin_options(name)]
+    try:
+        getter = plugin.get_options
+    except AttributeError:
+        opts = base.get_plugin_options(plugin)
+    else:
+        opts = getter()
+
+    return [o._to_oslo_opt() for o in opts]
 
 
 def register_conf_options(conf, group):
@@ -119,10 +129,7 @@ def load_from_conf_options(conf, group, **kwargs):
 
     conf.register_opts(oslo_opts, group=group)
 
-    for opt in plugin_opts:
-        val = conf[group][opt.dest]
-        if val is not None:
-            val = opt.type(val)
-        kwargs.setdefault(opt.dest, val)
+    def _getter(opt):
+        return conf[group][opt.dest]
 
-    return plugin.load_from_options(**kwargs)
+    return plugin.load_from_options_getter(_getter, **kwargs)

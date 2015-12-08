@@ -25,10 +25,10 @@ from keystoneauth1.access import service_providers
 STALE_TOKEN_DURATION = 30
 
 
-__all__ = ['AccessInfo',
+__all__ = ('AccessInfo',
            'AccessInfoV2',
            'AccessInfoV3',
-           'create']
+           'create')
 
 
 @utils.positional()
@@ -96,7 +96,7 @@ class AccessInfo(object):
         return norm_expires < soon
 
     def has_service_catalog(self):
-        """Returns true if the authorization token has a service catalog.
+        """Returns true if the auth token has a service catalog.
 
         :returns: boolean
         """
@@ -104,8 +104,9 @@ class AccessInfo(object):
 
     @property
     def auth_token(self):
-        """Returns the token_id associated with the auth request, to be used
-        in headers for authenticating OpenStack API requests.
+        """Returns the token_id associated with the auth request.
+
+        To be used in headers for authenticating OpenStack API requests.
 
         :returns: str
         """
@@ -129,7 +130,8 @@ class AccessInfo(object):
 
     @property
     def username(self):
-        """Returns the username associated with the authentication request.
+        """Returns the username associated with the auth request.
+
         Follows the pattern defined in the V2 API of first looking for 'name',
         returning that if available, and falling back to 'username' if name
         is unavailable.
@@ -140,7 +142,7 @@ class AccessInfo(object):
 
     @property
     def user_id(self):
-        """Returns the user id associated with the authentication request.
+        """Returns the user id associated with the auth request.
 
         :returns: str
         """
@@ -148,8 +150,7 @@ class AccessInfo(object):
 
     @property
     def user_domain_id(self):
-        """Returns the domain id of the user associated with the authentication
-        request.
+        """Returns the user's domain id associated with the auth request.
 
         :returns: str
         """
@@ -157,8 +158,7 @@ class AccessInfo(object):
 
     @property
     def user_domain_name(self):
-        """Returns the domain name of the user associated with the
-        authentication request.
+        """Returns the user's  domain name associated with the auth request.
 
         :returns: str
         """
@@ -166,8 +166,7 @@ class AccessInfo(object):
 
     @property
     def role_ids(self):
-        """Returns a list of role ids of the user associated with the
-        authentication request.
+        """Returns a list of user's role ids associated with the auth request.
 
         :returns: a list of strings of role ids
         """
@@ -175,8 +174,7 @@ class AccessInfo(object):
 
     @property
     def role_names(self):
-        """Returns a list of role names of the user associated with the
-        authentication request.
+        """Returns a list of user's role names associated with the auth request.
 
         :returns: a list of strings of role names
         """
@@ -184,7 +182,7 @@ class AccessInfo(object):
 
     @property
     def domain_name(self):
-        """Returns the domain name associated with the authentication token.
+        """Returns the domain name associated with the auth request.
 
         :returns: str or None (if no domain associated with the token)
         """
@@ -192,7 +190,7 @@ class AccessInfo(object):
 
     @property
     def domain_id(self):
-        """Returns the domain id associated with the authentication token.
+        """Returns the domain id associated with the auth request.
 
         :returns: str or None (if no domain associated with the token)
         """
@@ -200,7 +198,7 @@ class AccessInfo(object):
 
     @property
     def project_name(self):
-        """Returns the project name associated with the authentication request.
+        """Returns the project name associated with the auth request.
 
         :returns: str or None (if no project associated with the token)
         """
@@ -213,10 +211,12 @@ class AccessInfo(object):
 
     @property
     def scoped(self):
-        """Returns true if the authorization token was scoped to a tenant
-           (project), and contains a populated service catalog.
+        """Returns true if the auth token was scoped.
 
-           This is deprecated, use project_scoped instead.
+        Returns true if scoped to a tenant(project) or domain,
+        and contains a populated service catalog.
+
+        This is deprecated, use project_scoped instead.
 
         :returns: bool
         """
@@ -224,16 +224,15 @@ class AccessInfo(object):
 
     @property
     def project_scoped(self):
-        """Returns true if the authorization token was scoped to a tenant
-           (project).
+        """Returns true if the auth token was scoped to a tenant(project).
 
         :returns: bool
         """
-        raise NotImplementedError()
+        return bool(self.project_id)
 
     @property
     def domain_scoped(self):
-        """Returns true if the authorization token was scoped to a domain.
+        """Returns true if the auth token was scoped to a domain.
 
         :returns: bool
         """
@@ -241,7 +240,7 @@ class AccessInfo(object):
 
     @property
     def trust_id(self):
-        """Returns the trust id associated with the authentication token.
+        """Returns the trust id associated with the auth request.
 
         :returns: str or None (if no trust associated with the token)
         """
@@ -249,8 +248,9 @@ class AccessInfo(object):
 
     @property
     def trust_scoped(self):
-        """Returns true if the authorization token was scoped as delegated in a
-        trust, via the OS-TRUST v3 extension.
+        """Returns true if the auth token was scoped from a delegated trust.
+
+        The trust delegation is via the OS-TRUST v3 extension.
 
         :returns: bool
         """
@@ -274,9 +274,9 @@ class AccessInfo(object):
 
     @property
     def project_id(self):
-        """Returns the project ID associated with the authentication
-        request, or None if the authentication request wasn't scoped to a
-        project.
+        """Returns the project ID associated with the auth request.
+
+        This returns None if the auth token wasn't scoped to a project.
 
         :returns: str or None (if no project associated with the token)
         """
@@ -289,8 +289,7 @@ class AccessInfo(object):
 
     @property
     def project_domain_id(self):
-        """Returns the domain id of the project associated with the
-        authentication request.
+        """Returns the project's domain id associated with the auth request.
 
         :returns: str
         """
@@ -298,8 +297,7 @@ class AccessInfo(object):
 
     @property
     def project_domain_name(self):
-        """Returns the domain name of the project associated with the
-        authentication request.
+        """Returns the project's domain name associated with the auth request.
 
         :returns: str
         """
@@ -369,24 +367,38 @@ class AccessInfo(object):
         """
         raise NotImplementedError()
 
+    @property
+    def bind(self):
+        """Information about external mechanisms the token is bound to.
+
+        If a token is bound to an external authentication mechanism it can only
+        be used in conjunction with that mechanism. For example if bound to a
+        kerberos principal it may only be accepted if there is also kerberos
+        authentication performed on the request.
+
+        :returns: A dictionary or None. The key will be the bind type the value
+                  is a dictionary that is specific to the format of the bind
+                  type. Returns None if there is no bind information in the
+                  token.
+        """
+        raise NotImplementedError()
+
 
 class AccessInfoV2(AccessInfo):
-    """An object for encapsulating a raw v2 auth token from identity
-       service.
-    """
+    """An object for encapsulating raw v2 auth token from identity service."""
 
     version = 'v2.0'
     _service_catalog_class = service_catalog.ServiceCatalogV2
 
     def has_service_catalog(self):
-        return 'serviceCatalog' in self
+        return 'serviceCatalog' in self._data.get('access', {})
 
     @_missingproperty
     def auth_token(self):
         set_token = super(AccessInfoV2, self).auth_token
         return set_token or self._data['access']['token']['id']
 
-    @_missingproperty
+    @property
     def _token(self):
         return self._data['access']['token']
 
@@ -396,7 +408,7 @@ class AccessInfoV2(AccessInfo):
 
     @_missingproperty
     def issued(self):
-        return self._token['issued_at']
+        return utils.parse_isotime(self._token['issued_at'])
 
     @property
     def _user(self):
@@ -420,7 +432,8 @@ class AccessInfoV2(AccessInfo):
 
     @_missingproperty
     def role_ids(self):
-        return self.get('metadata', {}).get('roles', [])
+        metadata = self._data.get('access', {}).get('metadata', {})
+        return metadata.get('roles', [])
 
     @_missingproperty
     def role_names(self):
@@ -456,10 +469,6 @@ class AccessInfoV2(AccessInfo):
             pass
 
     @property
-    def project_scoped(self):
-        return 'tenant' in self._token
-
-    @property
     def domain_scoped(self):
         return False
 
@@ -471,7 +480,7 @@ class AccessInfoV2(AccessInfo):
     def trust_id(self):
         return self._trust['id']
 
-    @property
+    @_missingproperty
     def trust_scoped(self):
         return bool(self._trust)
 
@@ -543,11 +552,13 @@ class AccessInfoV2(AccessInfo):
     def service_providers(self):
         return None
 
+    @_missingproperty
+    def bind(self):
+        return self._token['bind']
+
 
 class AccessInfoV3(AccessInfo):
-    """An object for encapsulating a raw v3 auth token from identity
-       service.
-    """
+    """An object encapsulating raw v3 auth token from identity service."""
 
     version = 'v3'
     _service_catalog_class = service_catalog.ServiceCatalogV3
@@ -638,13 +649,6 @@ class AccessInfoV3(AccessInfo):
         return self._project['name']
 
     @property
-    def project_scoped(self):
-        try:
-            return bool(self._project)
-        except KeyError:
-            return False
-
-    @property
     def domain_scoped(self):
         try:
             return bool(self._domain)
@@ -707,3 +711,7 @@ class AccessInfoV3(AccessInfo):
                 service_providers.ServiceProviders.from_token(self._data))
 
         return self._service_providers
+
+    @_missingproperty
+    def bind(self):
+        return self._data['token']['bind']

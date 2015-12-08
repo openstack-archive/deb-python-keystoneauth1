@@ -23,11 +23,11 @@ from keystoneauth1.loading import base
 from keystoneauth1 import session
 
 
-__all__ = ['register_argparse_arguments',
+__all__ = ('register_argparse_arguments',
            'load_from_argparse_arguments',
            'register_conf_options',
            'load_from_conf_options',
-           'get_conf_options']
+           'get_conf_options')
 
 
 def _positive_non_zero_float(argument_value):
@@ -83,37 +83,46 @@ class Session(base.BaseLoader):
                                                       **kwargs)
 
     def register_argparse_arguments(self, parser):
-        parser.add_argument('--insecure',
-                            default=False,
-                            action='store_true',
-                            help='Explicitly allow client to perform '
-                                 '"insecure" TLS (https) requests. The '
-                                 'server\'s certificate will not be verified '
-                                 'against any certificate authorities. This '
-                                 'option should be used with caution.')
+        session_group = parser.add_argument_group(
+            'API Connection Options',
+            'Options controlling the HTTP API Connections')
 
-        parser.add_argument('--os-cacert',
-                            metavar='<ca-certificate>',
-                            default=os.environ.get('OS_CACERT'),
-                            help='Specify a CA bundle file to use in '
-                                 'verifying a TLS (https) server certificate. '
-                                 'Defaults to env[OS_CACERT].')
+        session_group.add_argument(
+            '--insecure',
+            default=False,
+            action='store_true',
+            help='Explicitly allow client to perform '
+            '"insecure" TLS (https) requests. The '
+            'server\'s certificate will not be verified '
+            'against any certificate authorities. This '
+            'option should be used with caution.')
 
-        parser.add_argument('--os-cert',
-                            metavar='<certificate>',
-                            default=os.environ.get('OS_CERT'),
-                            help='Defaults to env[OS_CERT].')
+        session_group.add_argument(
+            '--os-cacert',
+            metavar='<ca-certificate>',
+            default=os.environ.get('OS_CACERT'),
+            help='Specify a CA bundle file to use in '
+            'verifying a TLS (https) server certificate. '
+            'Defaults to env[OS_CACERT].')
 
-        parser.add_argument('--os-key',
-                            metavar='<key>',
-                            default=os.environ.get('OS_KEY'),
-                            help='Defaults to env[OS_KEY].')
+        session_group.add_argument(
+            '--os-cert',
+            metavar='<certificate>',
+            default=os.environ.get('OS_CERT'),
+            help='Defaults to env[OS_CERT].')
 
-        parser.add_argument('--timeout',
-                            default=600,
-                            type=_positive_non_zero_float,
-                            metavar='<seconds>',
-                            help='Set request timeout (in seconds).')
+        session_group.add_argument(
+            '--os-key',
+            metavar='<key>',
+            default=os.environ.get('OS_KEY'),
+            help='Defaults to env[OS_KEY].')
+
+        session_group.add_argument(
+            '--timeout',
+            default=600,
+            type=_positive_non_zero_float,
+            metavar='<seconds>',
+            help='Set request timeout (in seconds).')
 
     def load_from_argparse_arguments(self, namespace, **kwargs):
         kwargs.setdefault('insecure', namespace.insecure)
@@ -125,8 +134,7 @@ class Session(base.BaseLoader):
         return self.load_from_options(**kwargs)
 
     def get_conf_options(self, deprecated_opts=None):
-        """Get the oslo_config options that are needed for a
-        :py:class:`.Session`.
+        """Get oslo_config options that are needed for a :py:class:`.Session`.
 
         These may be useful without being registered for config file generation
         or to manipulate the options before registering them yourself.

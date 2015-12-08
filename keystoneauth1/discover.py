@@ -102,8 +102,7 @@ def normalize_version_number(version):
 
 
 def version_match(required, candidate):
-    """Test that an available version is a suitable match for a required
-    version.
+    """Test that an available version satisfies the required version.
 
     To be suitable a version must be of the same major version as required
     and be at least a match in minor/patch level.
@@ -179,11 +178,15 @@ class Discover(object):
 
         return versions
 
-    def version_data(self, **kwargs):
+    @utils.positional()
+    def version_data(self, reverse=False, **kwargs):
         """Get normalized version data.
 
         Return version data in a structured way.
 
+        :param bool reverse: Reverse the list. reverse=true will mean the
+                             returned list is sorted from newest to oldest
+                             version.
         :returns: A list of version data dictionaries sorted by version number.
                   Each data element in the returned list is a dictionary
                   consisting of at least:
@@ -231,7 +234,7 @@ class Discover(object):
                              'url': url,
                              'raw_status': v['status']})
 
-        versions.sort(key=lambda v: v['version'])
+        versions.sort(key=lambda v: v['version'], reverse=reverse)
         return versions
 
     def data_for(self, version, **kwargs):
@@ -247,9 +250,8 @@ class Discover(object):
         :rtype: dict
         """
         version = normalize_version_number(version)
-        version_data = self.version_data(**kwargs)
 
-        for data in reversed(version_data):
+        for data in self.version_data(reverse=True, **kwargs):
             if version_match(version, data['version']):
                 return data
 

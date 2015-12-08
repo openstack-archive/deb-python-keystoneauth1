@@ -16,8 +16,6 @@ import time
 import uuid
 
 import fixtures
-import mock
-from mox3 import mox
 import requests
 from requests_mock.contrib import fixture
 import six
@@ -42,18 +40,11 @@ class TestCase(testtools.TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.mox = mox.Mox()
         self.logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
-        self.time_patcher = mock.patch.object(time, 'time', lambda: 1234)
-        self.time_patcher.start()
+
+        fixtures.MockPatchObject(time, 'time', lambda: 1234)
 
         self.requests_mock = self.useFixture(fixture.Fixture())
-
-    def tearDown(self):
-        self.time_patcher.stop()
-        self.mox.UnsetStubs()
-        self.mox.VerifyAll()
-        super(TestCase, self).tearDown()
 
     def stub_url(self, method, parts=None, base_url=None, json=None, **kwargs):
         if not base_url:
@@ -117,8 +108,9 @@ class TestCase(testtools.TestCase):
 
 
 class TestResponse(requests.Response):
-    """Class used to wrap requests.Response and provide some
-       convenience to initialize with a dict.
+    """Class used to wrap requests.Response.
+
+    This provides some convenience to initialize with a dict.
     """
 
     def __init__(self, data):

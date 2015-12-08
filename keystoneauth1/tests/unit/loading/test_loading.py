@@ -50,3 +50,53 @@ class LoadingTests(utils.TestCase):
 
         for l in loaders.values():
             self.assertIsInstance(l, loading.BaseLoader)
+
+    def test_loading_getter(self):
+
+        called_opts = []
+
+        vals = {'a-int': 44,
+                'a-bool': False,
+                'a-float': 99.99,
+                'a-str': 'value'}
+
+        val = uuid.uuid4().hex
+
+        def _getter(opt):
+            called_opts.append(opt.name)
+            # return str because oslo.config should convert them back
+            return str(vals[opt.name])
+
+        p = utils.MockLoader().load_from_options_getter(_getter, other=val)
+
+        self.assertEqual(set(vals), set(called_opts))
+
+        for k, v in vals.items():
+            # replace - to _ because it's the dest used to create kwargs
+            self.assertEqual(v, p[k.replace('-', '_')])
+
+        # check that additional kwargs get passed through
+        self.assertEqual(val, p['other'])
+
+    def test_loading_getter_with_kwargs(self):
+        called_opts = set()
+
+        vals = {'a-bool': False,
+                'a-float': 99.99}
+
+        def _getter(opt):
+            called_opts.add(opt.name)
+            # return str because oslo.config should convert them back
+            return str(vals[opt.name])
+
+        p = utils.MockLoader().load_from_options_getter(_getter,
+                                                        a_int=66,
+                                                        a_str='another')
+
+        # only the options not passed by kwargs should get passed to getter
+        self.assertEqual(set(('a-bool', 'a-float')), called_opts)
+
+        self.assertEqual(False, p['a_bool'])
+        self.assertEqual(99.99, p['a_float'])
+        self.assertEqual('another', p['a_str'])
+        self.assertEqual(66, p['a_int'])

@@ -3,22 +3,23 @@
 # process, which may cause wedges in the gate later.
 
 hacking<0.11,>=0.10.0
+flake8-docstrings==0.2.1.post1
 
 coverage>=3.6
 discover
 fixtures>=1.3.1
 keyring!=3.3,>=2.1
 mock>=1.2
-mox3>=0.7.0
 oauthlib>=0.6
-oslo.config>=2.3.0 # Apache-2.0
-oslosphinx>=2.5.0 # Apache-2.0
+oslo.config>=2.7.0 # Apache-2.0
+oslosphinx!=3.4.0,>=2.5.0 # Apache-2.0
 oslotest>=1.10.0 # Apache-2.0
-os-testr>=0.1.0
+os-testr>=0.4.1
 pycrypto>=2.6
-requests-mock>=0.6.0 # Apache-2.0
+reno>=0.1.1 # Apache2
+requests-mock>=0.7.0 # Apache-2.0
 sphinx!=1.2.0,!=1.3b1,<1.3,>=1.1.2
-tempest-lib>=0.6.1
+tempest-lib>=0.10.0
 testrepository>=0.0.18
 testresources>=0.2.4
 testtools>=1.4.0

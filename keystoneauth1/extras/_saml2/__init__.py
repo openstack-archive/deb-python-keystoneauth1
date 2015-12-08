@@ -10,18 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from keystoneauth1 import loading
+from keystoneauth1.extras._saml2 import v3
+
+V3Saml2Password = v3.Saml2Password
+V3ADFSPassword = v3.ADFSPassword
 
 
-class BaseIdentityLoader(loading.BaseLoader):
-
-    def get_options(self):
-        options = super(BaseIdentityLoader, self).get_options()
-
-        options.extend([
-            loading.Opt('auth-url',
-                        required=True,
-                        help='Authentication URL'),
-        ])
-
-        return options
+__all__ = ('V3Saml2Password', 'V3ADFSPassword')

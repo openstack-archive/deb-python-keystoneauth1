@@ -13,11 +13,12 @@
 from keystoneauth1.exceptions import base
 
 
-__all__ = ['ConnectionError',
+__all__ = ('ConnectionError',
            'ConnectTimeout',
            'ConnectFailure',
            'SSLError',
-           'RetriableConnectionFailure']
+           'RetriableConnectionFailure',
+           'UnknownConnectionError')
 
 
 class RetriableConnectionFailure(Exception):
