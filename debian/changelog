@@ -3,7 +3,6 @@ python-keystoneauth1 (2.1.0-1) experimental; urgency=medium
   * New upstream release.
   * Fixed (build-)depends for this release.
   * Made the long description better.
-  * Fixed needed version of pep8 at build time.
 
  -- Thomas Goirand <zigo@debian.org>  Mon, 05 Oct 2015 09:48:29 +0200
 
