@@ -1,6 +1,7 @@
 python-keystoneauth1 (2.1.0-3) UNRELEASED; urgency=medium
 
   * d/rules: Run tests for all versions of py3.
+  * d/p/py3-session-adapters-iteration.patch: Fixes failure hit by py3.5 tests.
 
  -- Corey Bryant <corey.bryant@canonical.com>  Wed, 16 Dec 2015 09:17:55 -0500
 

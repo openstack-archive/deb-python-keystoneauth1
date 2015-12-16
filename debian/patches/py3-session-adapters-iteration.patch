@@ -1,0 +1,35 @@
+From 87d8ab5b88c7ec37ec525a3f4d2b647959a9efcf Mon Sep 17 00:00:00 2001
+From: Corey Bryant <corey.bryant@canonical.com>
+Date: Wed, 16 Dec 2015 10:27:25 -0500
+Subject: [PATCH] Iterate over copy of session.adapters keys in Python2/3
+
+Iterate over a copy of session.adapters keys in both Python 2.x and
+Python 3.x.  In Python 3.5+, keys() is not a copy, and therefore
+items can't be popped from it while iterating.
+    RuntimeError: OrderedDict mutated during iteration
+    https://bugs.python.org/issue24369
+    https://hg.python.org/cpython/rev/0d8679858272
+
+Forwarded: https://review.openstack.org/258594
+
+Conflicts:
+  The backport required changing the session_obj variable name to
+  session.
+
+Change-Id: I038f1e8261fa6b29401e6c64db95f7480b35a598
+Closes-Bug: #1502232
+---
+ keystoneauth1/session.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/keystoneauth1/session.py
++++ b/keystoneauth1/session.py
+@@ -104,7 +104,7 @@
+         if not session:
+             session = requests.Session()
+             # Use TCPKeepAliveAdapter to fix bug 1323862
+-            for scheme in session.adapters.keys():
++            for scheme in list(session.adapters):
+                 session.mount(scheme, TCPKeepAliveAdapter())
+ 
+         self.auth = auth
