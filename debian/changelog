@@ -1,3 +1,9 @@
+python-keystoneauth1 (2.1.0-3) UNRELEASED; urgency=medium
+
+  * d/rules: Run tests for all versions of py3.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Wed, 16 Dec 2015 09:17:55 -0500
+
 python-keystoneauth1 (2.1.0-2) experimental; urgency=medium
 
   * Added missing pep8 build-depends.
