@@ -1,3 +1,9 @@
+python-keystoneauth1 (2.1.0-4) UNRELEASED; urgency=medium
+
+  * d/watch: Fix tags url.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 04 Jan 2016 14:20:28 -0500
+
 python-keystoneauth1 (2.1.0-3) experimental; urgency=medium
 
   * d/rules: Run tests for all versions of py3.
