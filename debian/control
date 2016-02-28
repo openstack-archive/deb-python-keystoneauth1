@@ -59,8 +59,8 @@ Build-Depends-Indep: pep8,
                      subunit,
                      testrepository,
 Standards-Version: 3.9.6
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-keystoneauth1.git
-Vcs-Git: git://anonscm.debian.org/openstack/python-keystoneauth1.git
+Vcs-Browser: https://anonscm.debian.org/cgit/openstack/python-keystoneauth1.git/
+Vcs-Git: https://anonscm.debian.org/git/openstack/python-keystoneauth1.git
 Homepage: http://www.openstack.org/
 
 Package: python-keystoneauth1
