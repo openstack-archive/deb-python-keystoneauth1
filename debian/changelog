@@ -1,4 +1,4 @@
-python-keystoneauth1 (2.1.0-4) UNRELEASED; urgency=medium
+python-keystoneauth1 (2.1.0-5) experimental; urgency=medium
 
   [ Corey Bryant ]
   * d/watch: Fix tags url.
@@ -6,7 +6,10 @@ python-keystoneauth1 (2.1.0-4) UNRELEASED; urgency=medium
   [ Ondřej Nový ]
   * Fixed VCS URLs (https).
 
- -- Corey Bryant <corey.bryant@canonical.com>  Mon, 04 Jan 2016 14:20:28 -0500
+  [ Thomas Goirand ]
+  * Added patch to remove argparse from requirements.txt.
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 10 Mar 2016 12:58:44 +0100
 
 python-keystoneauth1 (2.1.0-3) experimental; urgency=medium
 
