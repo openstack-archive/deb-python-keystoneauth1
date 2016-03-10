@@ -9,6 +9,7 @@ python-keystoneauth1 (2.1.0-4) experimental; urgency=medium
   [ Thomas Goirand ]
   * Added patch to remove argparse from requirements.txt.
   * Standards-Version: 3.9.7 (no change).
+  * Fixed debian/copyright ordering.
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 10 Mar 2016 12:58:44 +0100
 
