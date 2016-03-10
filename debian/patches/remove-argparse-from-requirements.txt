@@ -1,6 +1,7 @@
 Description: Remove argparse from requirements.txt
+ Note: this is already fixed upstream.
 Author: Thomas Goirand <zigo@debian.org>
-Forwarded: no
+Forwarded: not-needed
 Last-Update: 2016-03-10
 
 --- python-keystoneauth1-2.1.0.orig/requirements.txt
