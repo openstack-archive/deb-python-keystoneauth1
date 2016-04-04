@@ -3,6 +3,7 @@ python-keystoneauth1 (2.4.0-1) unstable; urgency=medium
   * New upstream release.
   * Uploading to unstable.
   * Fixed (build-)depends for this release.
+  * Removed all patches (applied upstream).
 
  -- Thomas Goirand <zigo@debian.org>  Mon, 04 Apr 2016 12:33:33 +0200
 
