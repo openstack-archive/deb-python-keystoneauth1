@@ -15,14 +15,13 @@ import six
 
 from keystoneauth1 import access
 from keystoneauth1 import exceptions
-from keystoneauth1.identity.v3 import base
-from keystoneauth1.identity.v3 import token
+from keystoneauth1.identity.v3 import federation
 from keystoneauth1 import plugin
 
 __all__ = ('Keystone2Keystone',)
 
 
-class Keystone2Keystone(base.BaseAuth):
+class Keystone2Keystone(federation._Rescoped):
     """Plugin to execute the Keystone to Keyestone authentication flow.
 
     In this plugin, an ECP wrapped SAML assertion provided by a keystone
@@ -31,20 +30,17 @@ class Keystone2Keystone(base.BaseAuth):
 
     :param base_plugin: Auth plugin already authenticated against the keystone
                         IdP.
-    :type base_plugin: ``keystoneauth1.v3.base.BaseAuth``
+    :type base_plugin: keystoneauth1.identity.v3.base.BaseAuth
 
     :param service_provider: The Service Provider ID as returned by
                              ServiceProviderManager.list()
-    :type service_provider: string
+    :type service_provider: str
 
     """
 
-    # Path where the ECP wrapped SAML assertion should be presented to
-    # the Keystone Service Provider.
     REQUEST_ECP_URL = '/auth/OS-FEDERATION/saml2/ecp'
-
-    # Auth plugin class to use when scoping a new token
-    rescoping_plugin = token.Token
+    """Path where the ECP wrapped SAML assertion should be presented to the
+       Keystone Service Provider."""
 
     def __init__(self, base_plugin, service_provider, **kwargs):
         super(Keystone2Keystone, self).__init__(auth_url=None, **kwargs)
@@ -67,34 +63,24 @@ class Keystone2Keystone(base.BaseAuth):
         function will simply return whole string.
 
         :param auth_url: auth_url of the remote cloud
-        :type auth_url: string
+        :type auth_url: str
 
         :returns: auth_url of remote cloud where a token can be validated or
                   scoped.
-        :rtype: string
+        :rtype: str
 
         """
         PATTERN = '/OS-FEDERATION/'
         idx = auth_url.index(PATTERN) if PATTERN in auth_url else len(auth_url)
         return auth_url[:idx]
 
-    def _get_scoping_data(self):
-        return {'trust_id': self.trust_id,
-                'domain_id': self.domain_id,
-                'domain_name': self.domain_name,
-                'project_id': self.project_id,
-                'project_name': self.project_name,
-                'project_domain_id': self.project_domain_id,
-                'project_domain_name': self.project_domain_name}
-
-    def _ecp_assertion_request(self, session):
-        token_id = self._local_cloud_plugin.get_access(session).auth_token
+    def _get_ecp_assertion(self, session):
         body = {
             'auth': {
                 'identity': {
                     'methods': ['token'],
                     'token': {
-                        'id': token_id
+                        'id': self._local_cloud_plugin.get_token(session)
                     }
                 },
                 'scope': {
@@ -105,14 +91,17 @@ class Keystone2Keystone(base.BaseAuth):
             }
         }
 
-        return body
+        endpoint_filter = {'version': (3, 0),
+                           'interface': plugin.AUTH_INTERFACE}
 
-    def _get_ecp_assertion(self, session):
-        url = self._local_cloud_plugin.get_endpoint(
-            session, interface=plugin.AUTH_INTERFACE)
-        body = self._ecp_assertion_request(session)
+        headers = {'Accept': 'application/json'}
 
-        resp = session.post(url=url + self.REQUEST_ECP_URL, json=body,
+        resp = session.post(self.REQUEST_ECP_URL,
+                            json=body,
+                            auth=self._local_cloud_plugin,
+                            endpoint_filter=endpoint_filter,
+                            headers=headers,
+                            authenticated=False,
                             raise_exc=False)
 
         # NOTE(marek-denis): I am not sure whether disabling exceptions in the
@@ -142,13 +131,13 @@ class Keystone2Keystone(base.BaseAuth):
         :param sp_url: URL where the ECP wrapped SAML assertion will be
                        presented to the keystone SP. Usually, something like:
                        https://sp.com/Shibboleth.sso/SAML2/ECP
-        :type sp_url: string
+        :type sp_url: str
 
         :param sp_auth_url: Federated authentication URL of the keystone SP.
                             It is specified by IdP, for example:
                             https://sp.com/v3/OS-FEDERATION/identity_providers/
                             idp_id/protocols/protocol_id/auth
-        :type sp_auth_url: string
+        :type sp_auth_url: str
 
         """
 
@@ -180,14 +169,3 @@ class Keystone2Keystone(base.BaseAuth):
         response = self._send_service_provider_ecp_authn_response(
             session, sp_url, sp_auth_url)
         return access.create(resp=response)
-
-    def get_auth_ref(self, session, **kwargs):
-
-        auth_ref = self.get_unscoped_auth_ref(session, **kwargs)
-        scoping = self._get_scoping_data()
-        if any(scoping.values()):
-            token_plugin = self.rescoping_plugin(self.auth_url,
-                                                 token=auth_ref.auth_token,
-                                                 **scoping)
-            auth_ref = token_plugin.get_auth_ref(session)
-        return auth_ref

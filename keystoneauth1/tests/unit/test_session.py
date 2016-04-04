@@ -25,6 +25,7 @@ from keystoneauth1 import exceptions
 from keystoneauth1 import plugin
 from keystoneauth1 import session as client_session
 from keystoneauth1.tests.unit import utils
+from keystoneauth1 import token_endpoint
 
 
 class SessionTests(utils.TestCase):
@@ -89,12 +90,15 @@ class SessionTests(utils.TestCase):
         self.assertRequestBodyIs(json={'hello': 'world'})
 
     def test_user_agent(self):
-        session = client_session.Session(user_agent='test-agent')
+        custom_agent = 'custom-agent/1.0'
+        session = client_session.Session(user_agent=custom_agent)
         self.stub_url('GET', text='response')
         resp = session.get(self.TEST_URL)
 
         self.assertTrue(resp.ok)
-        self.assertRequestHeaderEqual('User-Agent', 'test-agent')
+        self.assertRequestHeaderEqual(
+            'User-Agent',
+            '%s %s' % (custom_agent, client_session.DEFAULT_USER_AGENT))
 
         resp = session.get(self.TEST_URL, headers={'User-Agent': 'new-agent'})
         self.assertTrue(resp.ok)
@@ -363,12 +367,16 @@ class AuthPlugin(plugin.BaseAuthPlugin):
 class CalledAuthPlugin(plugin.BaseAuthPlugin):
 
     ENDPOINT = 'http://fakeendpoint/'
+    USER_ID = uuid.uuid4().hex
+    PROJECT_ID = uuid.uuid4().hex
 
     def __init__(self, invalidate=True):
         self.get_token_called = False
         self.get_endpoint_called = False
         self.endpoint_arguments = {}
         self.invalidate_called = False
+        self.get_project_id_called = False
+        self.get_user_id_called = False
         self._invalidate = invalidate
 
     def get_token(self, session):
@@ -383,6 +391,14 @@ class CalledAuthPlugin(plugin.BaseAuthPlugin):
     def invalidate(self):
         self.invalidate_called = True
         return self._invalidate
+
+    def get_project_id(self, session, **kwargs):
+        self.get_project_id_called = True
+        return self.PROJECT_ID
+
+    def get_user_id(self, session, **kwargs):
+        self.get_user_id_called = True
+        return self.USER_ID
 
 
 class SessionAuthTests(utils.TestCase):
@@ -571,6 +587,9 @@ class SessionAuthTests(utils.TestCase):
         self.assertTrue(auth.get_token_called)
         self.assertFalse(auth.get_endpoint_called)
 
+        self.assertFalse(auth.get_user_id_called)
+        self.assertFalse(auth.get_project_id_called)
+
     def test_endpoint_override_ignore_full_url(self):
         auth = CalledAuthPlugin()
         sess = client_session.Session(auth=auth)
@@ -590,6 +609,70 @@ class SessionAuthTests(utils.TestCase):
 
         self.assertTrue(auth.get_token_called)
         self.assertFalse(auth.get_endpoint_called)
+
+        self.assertFalse(auth.get_user_id_called)
+        self.assertFalse(auth.get_project_id_called)
+
+    def test_endpoint_override_does_id_replacement(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+
+        override_base = 'http://mytest/%(project_id)s/%(user_id)s'
+        path = 'path'
+        replacements = {'user_id': CalledAuthPlugin.USER_ID,
+                        'project_id': CalledAuthPlugin.PROJECT_ID}
+        override_url = override_base % replacements + '/' + path
+        resp_text = uuid.uuid4().hex
+
+        self.requests_mock.get(override_url, text=resp_text)
+
+        resp = sess.get(path,
+                        endpoint_override=override_base,
+                        endpoint_filter={'service_type': 'identity'})
+
+        self.assertEqual(resp_text, resp.text)
+        self.assertEqual(override_url, self.requests_mock.last_request.url)
+
+        self.assertTrue(auth.get_token_called)
+        self.assertTrue(auth.get_user_id_called)
+        self.assertTrue(auth.get_project_id_called)
+        self.assertFalse(auth.get_endpoint_called)
+
+    def test_endpoint_override_fails_to_replace_if_none(self):
+        # The token_endpoint plugin doesn't know user_id or project_id
+        auth = token_endpoint.Token(uuid.uuid4().hex, uuid.uuid4().hex)
+        sess = client_session.Session(auth=auth)
+
+        override_base = 'http://mytest/%(project_id)s'
+
+        e = self.assertRaises(ValueError,
+                              sess.get,
+                              '/path',
+                              endpoint_override=override_base,
+                              endpoint_filter={'service_type': 'identity'})
+
+        self.assertIn('project_id', str(e))
+        override_base = 'http://mytest/%(user_id)s'
+
+        e = self.assertRaises(ValueError,
+                              sess.get,
+                              '/path',
+                              endpoint_override=override_base,
+                              endpoint_filter={'service_type': 'identity'})
+        self.assertIn('user_id', str(e))
+
+    def test_endpoint_override_fails_to_do_unknown_replacement(self):
+        auth = CalledAuthPlugin()
+        sess = client_session.Session(auth=auth)
+
+        override_base = 'http://mytest/%(unknown_id)s'
+
+        e = self.assertRaises(AttributeError,
+                              sess.get,
+                              '/path',
+                              endpoint_override=override_base,
+                              endpoint_filter={'service_type': 'identity'})
+        self.assertIn('unknown_id', str(e))
 
     def test_user_and_project_id(self):
         auth = AuthPlugin()
@@ -821,3 +904,115 @@ class AdapterTest(utils.TestCase):
                           client_session.Session().request,
                           self.TEST_URL,
                           'GET')
+
+
+class TCPKeepAliveAdapterTest(utils.TestCase):
+
+    def setUp(self):
+        super(TCPKeepAliveAdapterTest, self).setUp()
+        self.init_poolmanager = self.patch(
+            client_session.requests.adapters.HTTPAdapter,
+            'init_poolmanager')
+        self.constructor = self.patch(
+            client_session.TCPKeepAliveAdapter, '__init__', lambda self: None)
+
+    def test_init_poolmanager_with_requests_lesser_than_2_4_1(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 0))
+        given_adapter = client_session.TCPKeepAliveAdapter()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3)
+
+        # then no socket_options are given
+        self.init_poolmanager.assert_called_once_with(1, 2, 3)
+
+    def test_init_poolmanager_with_basic_options(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 1))
+        socket = self.patch_socket_with_options(
+            ['IPPROTO_TCP', 'TCP_NODELAY', 'SOL_SOCKET', 'SO_KEEPALIVE'])
+        given_adapter = client_session.TCPKeepAliveAdapter()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3)
+
+        # then no socket_options are given
+        self.init_poolmanager.assert_called_once_with(
+            1, 2, 3, socket_options=[
+                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)])
+
+    def test_init_poolmanager_with_tcp_keepidle(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 1))
+        socket = self.patch_socket_with_options(
+            ['IPPROTO_TCP', 'TCP_NODELAY', 'SOL_SOCKET', 'SO_KEEPALIVE',
+             'TCP_KEEPIDLE'])
+        given_adapter = client_session.TCPKeepAliveAdapter()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3)
+
+        # then socket_options are given
+        self.init_poolmanager.assert_called_once_with(
+            1, 2, 3, socket_options=[
+                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+                (socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)])
+
+    def test_init_poolmanager_with_tcp_keepcnt(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 1))
+        socket = self.patch_socket_with_options(
+            ['IPPROTO_TCP', 'TCP_NODELAY', 'SOL_SOCKET', 'SO_KEEPALIVE',
+             'TCP_KEEPCNT'])
+        given_adapter = client_session.TCPKeepAliveAdapter()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3)
+
+        # then socket_options are given
+        self.init_poolmanager.assert_called_once_with(
+            1, 2, 3, socket_options=[
+                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+                (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4)])
+
+    def test_init_poolmanager_with_tcp_keepintvl(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 1))
+        socket = self.patch_socket_with_options(
+            ['IPPROTO_TCP', 'TCP_NODELAY', 'SOL_SOCKET', 'SO_KEEPALIVE',
+             'TCP_KEEPINTVL'])
+        given_adapter = client_session.TCPKeepAliveAdapter()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3)
+
+        # then socket_options are given
+        self.init_poolmanager.assert_called_once_with(
+            1, 2, 3, socket_options=[
+                (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+                (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+                (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15)])
+
+    def test_init_poolmanager_with_given_optionsl(self):
+        self.patch(client_session, 'REQUESTS_VERSION', (2, 4, 1))
+        given_adapter = client_session.TCPKeepAliveAdapter()
+        given_options = object()
+
+        # when pool manager is initialized
+        given_adapter.init_poolmanager(1, 2, 3, socket_options=given_options)
+
+        # then socket_options are given
+        self.init_poolmanager.assert_called_once_with(
+            1, 2, 3, socket_options=given_options)
+
+    def patch_socket_with_options(self, option_names):
+        # to mock socket module with exactly the attributes I want I create
+        # a class with that attributes
+        socket = type('socket', (object,),
+                      {name: 'socket.' + name for name in option_names})
+        return self.patch(client_session, 'socket', socket)
+
+    def patch(self, target, name, *args, **kwargs):
+        context = mock.patch.object(target, name, *args, **kwargs)
+        patch = context.start()
+        self.addCleanup(context.stop)
+        return patch

@@ -16,6 +16,7 @@ import hashlib
 import json
 import threading
 
+from positional import positional
 import six
 
 from keystoneauth1 import _utils as utils
@@ -198,9 +199,9 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
 
         else:
             if not service_type:
-                LOG.warn(('Plugin cannot return an endpoint without '
-                          'knowing the service type that is required. Add '
-                          'service_type to endpoint filtering data.'))
+                LOG.warning('Plugin cannot return an endpoint without '
+                            'knowing the service type that is required. Add '
+                            'service_type to endpoint filtering data.')
                 return None
 
             if not interface:
@@ -261,7 +262,7 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
         except exceptions.ServiceProviderNotFound:
             return None
 
-    @utils.positional()
+    @positional()
     def get_discovery(self, session, url, authenticated=None):
         """Return the discovery object for a URL.
 

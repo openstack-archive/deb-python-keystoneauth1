@@ -15,14 +15,17 @@ import functools
 import hashlib
 import json
 import logging
+import platform
 import socket
 import time
 import uuid
 
+from positional import positional
 import requests
 import six
 from six.moves import urllib
 
+import keystoneauth1
 from keystoneauth1 import _utils as utils
 from keystoneauth1 import exceptions
 
@@ -36,9 +39,23 @@ try:
 except ImportError:
     osprofiler_web = None
 
-USER_AGENT = 'keystoneauth1'
+DEFAULT_USER_AGENT = 'keystoneauth1/%s %s %s/%s' % (
+    keystoneauth1.__version__, requests.utils.default_user_agent(),
+    platform.python_implementation(), platform.python_version())
 
 _logger = utils.get_logger(__name__)
+
+
+def _construct_session(session_obj=None):
+    # NOTE(morganfainberg): if the logic in this function changes be sure to
+    # update the betamax fixture's '_construct_session_with_betamax" function
+    # as well.
+    if not session_obj:
+        session_obj = requests.Session()
+        # Use TCPKeepAliveAdapter to fix bug 1323862
+        for scheme in list(session_obj.adapters):
+            session_obj.mount(scheme, TCPKeepAliveAdapter())
+    return session_obj
 
 
 class _JSONEncoder(json.JSONEncoder):
@@ -52,6 +69,28 @@ class _JSONEncoder(json.JSONEncoder):
             return six.text_type(o)
 
         return super(_JSONEncoder, self).default(o)
+
+
+class _StringFormatter(object):
+    """A String formatter that fetches values on demand"""
+
+    def __init__(self, session, auth):
+        self.session = session
+        self.auth = auth
+
+    def __getitem__(self, item):
+        if item == 'project_id':
+            value = self.session.get_project_id(self.auth)
+        elif item == 'user_id':
+            value = self.session.get_user_id(self.auth)
+        else:
+            raise AttributeError(item)
+
+        if not value:
+            raise ValueError("This type of authentication does not provide a "
+                             "%s that can be substituted" % item)
+
+        return value
 
 
 class Session(object):
@@ -83,8 +122,12 @@ class Session(object):
                           of seconds or 0 for no timeout. (optional, defaults
                           to 0)
     :param string user_agent: A User-Agent header string to use for the
-                              request. If not provided a default is used.
-                              (optional, defaults to 'keystoneauth1')
+                              request. If not provided, a default of
+                              :attr:`~keystoneauth1.session.DEFAULT_USER_AGENT`
+                              is used, which contains the keystoneauth1 version
+                              as well as those of the requests library and
+                              which Python is being used. When a non-None value
+                              is passed, it will be prepended to the default.
     :param int/bool redirect: Controls the maximum number of redirections that
                               can be followed by a request. Either an integer
                               for a specific count or True/False for
@@ -97,18 +140,13 @@ class Session(object):
 
     _DEFAULT_REDIRECT_LIMIT = 30
 
-    @utils.positional(2)
+    @positional(2)
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
                  cert=None, timeout=None, user_agent=None,
                  redirect=_DEFAULT_REDIRECT_LIMIT):
-        if not session:
-            session = requests.Session()
-            # Use TCPKeepAliveAdapter to fix bug 1323862
-            for scheme in session.adapters.keys():
-                session.mount(scheme, TCPKeepAliveAdapter())
 
         self.auth = auth
-        self.session = session
+        self.session = _construct_session(session)
         self.original_ip = original_ip
         self.verify = verify
         self.cert = cert
@@ -120,7 +158,11 @@ class Session(object):
 
         # don't override the class variable if none provided
         if user_agent is not None:
-            self.user_agent = user_agent
+            # Per RFC 7231 Section 5.5.3, identifiers in a user-agent
+            # should be ordered by decreasing significance.
+            # If a user sets their product, we prepend it to the KSA
+            # version, requests version, and then the Python version.
+            self.user_agent = "%s %s" % (user_agent, DEFAULT_USER_AGENT)
 
         self._json = _JSONEncoder()
 
@@ -166,7 +208,7 @@ class Session(object):
             return (header[0], '{SHA1}%s' % token_hash)
         return header
 
-    @utils.positional()
+    @positional()
     def _http_log_request(self, url, method=None, data=None,
                           json=None, headers=None, logger=_logger):
         if not logger.isEnabledFor(logging.DEBUG):
@@ -205,7 +247,7 @@ class Session(object):
 
         logger.debug(' '.join(string_parts))
 
-    @utils.positional()
+    @positional()
     def _http_log_response(self, response=None, json=None,
                            status_code=None, headers=None, text=None,
                            logger=_logger):
@@ -234,7 +276,7 @@ class Session(object):
 
         logger.debug(' '.join(string_parts))
 
-    @utils.positional()
+    @positional()
     def request(self, url, method, json=None, original_ip=None,
                 user_agent=None, redirect=None, authenticated=None,
                 endpoint_filter=None, auth=None, requests_auth=None,
@@ -282,7 +324,11 @@ class Session(object):
                                       endpoint in the auth plugin. This will be
                                       ignored if a fully qualified URL is
                                       provided but take priority over an
-                                      endpoint_filter. (optional)
+                                      endpoint_filter. This string may contain
+                                      the values %(project_id)s and %(user_id)s
+                                      to have those values replaced by the
+                                      project_id/user_id of the current
+                                      authentication. (optional)
         :param auth: The auth plugin to use when authenticating this request.
                      This will override the plugin that is attached to the
                      session (if any). (optional)
@@ -340,7 +386,7 @@ class Session(object):
             base_url = None
 
             if endpoint_override:
-                base_url = endpoint_override
+                base_url = endpoint_override % _StringFormatter(self, auth)
             elif endpoint_filter:
                 base_url = self.get_endpoint(auth, **endpoint_filter)
 
@@ -360,7 +406,7 @@ class Session(object):
         elif self.user_agent:
             user_agent = headers.setdefault('User-Agent', self.user_agent)
         else:
-            user_agent = headers.setdefault('User-Agent', USER_AGENT)
+            user_agent = headers.setdefault('User-Agent', DEFAULT_USER_AGENT)
 
         if self.original_ip:
             headers.setdefault('Forwarded',
@@ -713,6 +759,9 @@ class Session(object):
         return auth.get_project_id(self)
 
 
+REQUESTS_VERSION = tuple(int(v) for v in requests.__version__.split('.'))
+
+
 class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
     """The custom adapter used to set TCP Keep-Alive on all connections.
 
@@ -721,16 +770,12 @@ class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
     http://blogs.msdn.com/b/windowsazurestorage/archive/2010/06/25/nagle-s-algorithm-is-not-friendly-towards-small-requests.aspx
     """
     def init_poolmanager(self, *args, **kwargs):
-        if requests.__version__ >= '2.4.1':
+        if 'socket_options' not in kwargs and REQUESTS_VERSION >= (2, 4, 1):
             socket_options = [
                 # Keep Nagle's algorithm off
                 (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
                 # Turn on TCP Keep-Alive
                 (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
-                # Set the maximum number of keep-alive probes
-                (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4),
-                # Send keep-alive probes every 15 seconds
-                (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15),
             ]
 
             # Some operating systems (e.g., OSX) do not support setting
@@ -741,9 +786,21 @@ class TCPKeepAliveAdapter(requests.adapters.HTTPAdapter):
                     (socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
                 ]
 
+            if hasattr(socket, 'TCP_KEEPCNT'):
+                socket_options += [
+                    # Set the maximum number of keep-alive probes
+                    (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 4),
+                ]
+
+            if hasattr(socket, 'TCP_KEEPINTVL'):
+                socket_options += [
+                    # Send keep-alive probes every 15 seconds
+                    (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15),
+                ]
+
             # After waiting 60 seconds, and then sending a probe once every 15
             # seconds 4 times, these options should ensure that a connection
             # hands for no longer than 2 minutes before a ConnectionError is
             # raised.
-            kwargs.setdefault('socket_options', socket_options)
+            kwargs['socket_options'] = socket_options
         super(TCPKeepAliveAdapter, self).init_poolmanager(*args, **kwargs)
