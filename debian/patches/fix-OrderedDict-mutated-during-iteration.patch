@@ -3,7 +3,7 @@ Description: Fix OrderedDict mutated during iteration
  Python 3.x.  In Python 3.x, keys() is not a copy, and therefore
  items can't be popped from it while iterating.
 Author: Thomas Goirand <zigo@debian.org>
-Forwarded: no
+Forwarded: https://review.openstack.org/301049
 Last-Update: 2016-04-04
 
 --- python-keystoneauth1-2.4.0.orig/keystoneauth1/fixture/keystoneauth_betamax.py
