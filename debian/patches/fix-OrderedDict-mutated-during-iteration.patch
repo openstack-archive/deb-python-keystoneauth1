@@ -1,0 +1,19 @@
+Description: Fix OrderedDict mutated during iteration
+ Iterate over a copy of session.adapters keys in both Python 2.x and
+ Python 3.x.  In Python 3.x, keys() is not a copy, and therefore
+ items can't be popped from it while iterating.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2016-04-04
+
+--- python-keystoneauth1-2.4.0.orig/keystoneauth1/fixture/keystoneauth_betamax.py
++++ python-keystoneauth1-2.4.0/keystoneauth1/fixture/keystoneauth_betamax.py
+@@ -51,7 +51,7 @@ def _construct_session_with_betamax(fixt
+     if not session_obj:
+         session_obj = requests.Session()
+         # Use TCPKeepAliveAdapter to fix bug 1323862
+-        for scheme in session_obj.adapters.keys():
++        for scheme in list(session_obj.adapters.keys()):
+             session_obj.mount(scheme, session.TCPKeepAliveAdapter())
+     fixture.recorder = betamax.Betamax(
+         session_obj, cassette_library_dir=fixture.cassette_library_dir)
