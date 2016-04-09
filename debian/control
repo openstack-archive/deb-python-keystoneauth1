@@ -57,7 +57,7 @@ Build-Depends-Indep: git,
                      python3-testtools (>= 1.4.0),
                      subunit,
                      testrepository,
-Standards-Version: 3.9.7
+Standards-Version: 3.9.8
 Vcs-Browser: https://anonscm.debian.org/cgit/openstack/python-keystoneauth1.git/
 Vcs-Git: https://anonscm.debian.org/git/openstack/python-keystoneauth1.git
 Homepage: http://www.openstack.org/
