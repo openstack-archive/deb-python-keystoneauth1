@@ -1,4 +1,4 @@
-python-keystoneauth1 (2.4.1-1) UNRELEASED; urgency=medium
+python-keystoneauth1 (2.4.1-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
   * Standards-Version is 3.9.8 now (no change)
@@ -8,7 +8,7 @@ python-keystoneauth1 (2.4.1-1) UNRELEASED; urgency=medium
   * New upstream point release (LP: #1586900).
     - d/p/*: Dropped, included upstream.
 
- -- Ondřej Nový <novy@ondrej.org>  Sat, 09 Apr 2016 19:27:32 +0200
+ -- James Page <james.page@ubuntu.com>  Tue, 31 May 2016 10:49:35 +0100
 
 python-keystoneauth1 (2.4.0-1) unstable; urgency=medium
 
