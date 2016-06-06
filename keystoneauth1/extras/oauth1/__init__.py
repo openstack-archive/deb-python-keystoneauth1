@@ -10,15 +10,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from keystoneauth1.exceptions import base
+from keystoneauth1.extras.oauth1 import v3
 
-__all__ = ('ServiceProviderNotFound',)
+__all__ = ('V3OAuth1Method', 'V3OAuth')
 
 
-class ServiceProviderNotFound(base.ClientException):
-    """A Service Provider cannot be found."""
-
-    def __init__(self, sp_id):
-        self.sp_id = sp_id
-        msg = 'The Service Provider %(sp)s could not be found' % {'sp': sp_id}
-        super(ServiceProviderNotFound, self).__init__(msg)
+V3OAuth1Method = v3.OAuth1Method
+V3OAuth1 = v3.OAuth1

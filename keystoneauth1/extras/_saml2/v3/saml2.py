@@ -18,7 +18,7 @@ from keystoneauth1.extras._saml2.v3 import base
 
 
 class Password(base.BaseSAMLPlugin):
-    """Implement authentication plugin for SAML2 protocol.
+    r"""Implement authentication plugin for SAML2 protocol.
 
     ECP stands for `Enhanced Client or Proxy` and is a SAML2 extension
     for federated authentication where a transportation layer consists of
@@ -199,7 +199,6 @@ class Password(base.BaseSAMLPlugin):
 
     def _send_idp_saml2_authn_request(self, session):
         """Present modified SAML2 authn assertion from the Service Provider."""
-
         self._prepare_idp_saml2_request(self.saml2_authn_request)
         idp_saml2_authn_request = self.saml2_authn_request
 

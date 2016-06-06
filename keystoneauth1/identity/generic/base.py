@@ -60,7 +60,7 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
 
     @abc.abstractmethod
     def create_plugin(self, session, version, url, raw_status=None):
-        """Create a plugin from the given paramters.
+        """Create a plugin from the given parameters.
 
         This function will be called multiple times with the version and url
         of a potential endpoint. If a plugin can be constructed that fits the
@@ -68,10 +68,10 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
         call will be made with other available URLs.
 
         :param session: A session object.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
         :param tuple version: A tuple of the API version at the URL.
-        :param string url: The base URL for this version.
-        :param string raw_status: The status that was in the discovery field.
+        :param str url: The base URL for this version.
+        :param str raw_status: The status that was in the discovery field.
 
         :returns: A plugin that can match the parameters or None if nothing.
         """
@@ -90,14 +90,14 @@ class BaseGenericPlugin(base.BaseIdentityPlugin):
 
     @property
     def _v2_params(self):
-        """Parameters that are common to v2 plugins."""
+        """Return the parameters that are common to v2 plugins."""
         return {'trust_id': self._trust_id,
                 'tenant_id': self._project_id,
                 'tenant_name': self._project_name}
 
     @property
     def _v3_params(self):
-        """Parameters that are common to v3 plugins."""
+        """Return the parameters that are common to v3 plugins."""
         pr_domain_id = self._project_domain_id or self._default_domain_id
         pr_domain_name = self._project_domain_name or self._default_domain_name
 

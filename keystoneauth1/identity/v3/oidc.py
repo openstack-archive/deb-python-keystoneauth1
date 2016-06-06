@@ -20,7 +20,7 @@ __all__ = ('OidcAuthorizationCode',
 
 
 class _OidcBase(federation.FederationBaseAuth):
-    """Base class for different OpenID Connect based flows
+    """Base class for different OpenID Connect based flows.
 
     The OpenID Connect specification can be found at::
     ``http://openid.net/specs/openid-connect-core-1_0.html``
@@ -29,7 +29,7 @@ class _OidcBase(federation.FederationBaseAuth):
     def __init__(self, auth_url, identity_provider, protocol,
                  client_id, client_secret, access_token_endpoint,
                  grant_type, access_token_type, **kwargs):
-        """The OpenID Connect plugin expects the following:
+        """The OpenID Connect plugin expects the following.
 
         :param auth_url: URL of the Identity Service
         :type auth_url: string
@@ -79,7 +79,7 @@ class _OidcBase(federation.FederationBaseAuth):
         """Exchange a variety of user supplied values for an access token.
 
         :param session: a session object to send out HTTP requests.
-        :type session: keystoneauth.session.Session
+        :type session: keystoneauth1.session.Session
 
         :param client_auth: a tuple representing client id and secret
         :type client_auth: tuple
@@ -101,7 +101,7 @@ class _OidcBase(federation.FederationBaseAuth):
         return op_response
 
     def _get_keystone_token(self, session, headers, federated_token_url):
-        """Exchange an acess token for a keystone token.
+        r"""Exchange an acess token for a keystone token.
 
         By Sending the access token in an `Authorization: Bearer` header, to
         an OpenID Connect protected endpoint (Federated Token URL). The
@@ -112,16 +112,16 @@ class _OidcBase(federation.FederationBaseAuth):
         succeed, a Keystone token will be presented to the user.
 
         :param session: a session object to send out HTTP requests.
-        :type session: keystoneauth.session.Session
+        :type session: keystoneauth1.session.Session
 
         :param headers: an Authorization header containing the access token.
         :type headers_: dict
 
-        :param federated_auth_url: Protected URL for federated authentication,
-                                   for example: https://localhost:5000/v3/\
-                                   OS-FEDERATION/identity_providers/bluepages/\
-                                   protocols/oidc/auth
-        :type federated_auth_url: string
+        :param federated_token_url: Protected URL for federated authentication,
+                                    for example: https://localhost:5000/v3/\
+                                    OS-FEDERATION/identity_providers/bluepages/\
+                                    protocols/oidc/auth
+        :type federated_token_url: string
         """
         auth_response = session.post(self.federated_token_url,
                                      headers=headers,
@@ -130,14 +130,14 @@ class _OidcBase(federation.FederationBaseAuth):
 
 
 class OidcPassword(_OidcBase):
-    """Implementation for OpenID Connect Resource Owner Password Credential"""
+    """Implementation for OpenID Connect Resource Owner Password Credential."""
 
     @positional(4)
     def __init__(self, auth_url, identity_provider, protocol,
                  client_id, client_secret, access_token_endpoint,
                  grant_type='password', access_token_type='access_token',
                  username=None, password=None, scope='profile'):
-        """The OpenID Password plugin expects the following:
+        """The OpenID Password plugin expects the following.
 
         :param username: Username used to authenticate
         :type username: string
@@ -183,7 +183,6 @@ class OidcPassword(_OidcBase):
         :returns: a token data representation
         :rtype: :py:class:`keystoneauth1.access.AccessInfoV3`
         """
-
         # get an access token
         client_auth = (self.client_id, self.client_secret)
         payload = {'grant_type': self.grant_type, 'username': self.username,
@@ -202,7 +201,7 @@ class OidcPassword(_OidcBase):
 
 
 class OidcAuthorizationCode(_OidcBase):
-    """Implementation for OpenID Connect Authorization Code"""
+    """Implementation for OpenID Connect Authorization Code."""
 
     @positional(4)
     def __init__(self, auth_url, identity_provider, protocol,
@@ -210,7 +209,7 @@ class OidcAuthorizationCode(_OidcBase):
                  grant_type='authorization_code',
                  access_token_type='access_token',
                  redirect_uri=None, code=None):
-        """The OpenID Authorization Code plugin expects the following:
+        """The OpenID Authorization Code plugin expects the following.
 
         :param redirect_uri: OpenID Connect Client Redirect URL
         :type redirect_uri: string
@@ -250,7 +249,6 @@ class OidcAuthorizationCode(_OidcBase):
         :returns: a token data representation
         :rtype: :py:class:`keystoneauth1.access.AccessInfoV3`
         """
-
         # get an access token
         client_auth = (self.client_id, self.client_secret)
         payload = {'grant_type': self.grant_type,

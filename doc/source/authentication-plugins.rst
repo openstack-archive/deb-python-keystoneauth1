@@ -21,7 +21,7 @@ Identity server (such as Keystone) are called Identity Plugins.
 Available Plugins
 =================
 
-Keystoneclient ships with a number of plugins and particularly Identity
+Keystoneauth ships with a number of plugins and particularly Identity
 Plugins.
 
 V2 Identity Plugins
@@ -38,7 +38,7 @@ They include:
   V2 identity service using an existing token.
 
 V2 identity plugins must use an `auth_url` that points to the root of a V2
-identity server URL, i.e.: `http://hostname:5000/v2.0`.
+identity server URL, i.e.: ``http://hostname:5000/v2.0``.
 
 V3 Identity Plugins
 -------------------
@@ -97,7 +97,16 @@ This will have exactly the same effect as using the single
 :py:class:`~keystoneauth1.identity.v3.PasswordMethod` above.
 
 V3 identity plugins must use an `auth_url` that points to the root of a V3
-identity server URL, i.e.: `http://hostname:5000/v3`.
+identity server URL, i.e.: ``http://hostname:5000/v3``.
+
+Federation
+==========
+
+V3 plugins are provided to support federation:
+
+- :class:`~keystoneauth1.identity.v3.FederationBaseAuth`
+- :class:`~keystoneauth1.identity.v3.Keystone2Keystone`
+
 
 Version Independent Identity Plugins
 ------------------------------------
@@ -127,8 +136,8 @@ Simple Plugins
 
 In addition to the Identity plugins a simple plugin that will always use the
 same provided token and endpoint is available. This is useful in situations
-where you have an ``ADMIN_TOKEN`` or in testing when you specifically know the
-endpoint you want to communicate with.
+where you have an token or in testing when you specifically know the endpoint
+you want to communicate with.
 
 It can be found at :py:class:`keystoneauth1.token_endpoint.Token`.
 
@@ -138,18 +147,17 @@ V3 OAuth 1.0a Plugins
 
 There also exists a plugin for OAuth 1.0a authentication. We provide a helper
 authentication plugin at:
-:py:class:`~keystoneauth1.v3.contrib.oauth1.auth.OAuth`.
+:py:class:`~keystoneauth1.extras.oauth1.V3OAuth1`.
 The plugin requires the OAuth consumer's key and secret, as well as the OAuth
 access token's key and secret. For example::
 
-    >>> from keystoneauth1.v3.contrib.oauth1 import auth
+    >>> from keystoneauth1.extras import oauth1
     >>> from keystoneauth1 import session
-    >>> from keystoneauth1.v3 import client
-    >>> a = auth.OAuth('http://my.keystone.com:5000/v3',
-    ...                consumer_key=consumer_id,
-    ...                consumer_secret=consumer_secret,
-    ...                access_key=access_token_key,
-    ...                access_secret=access_token_secret)
+    >>> a = auth.V3OAuth1('http://my.keystone.com:5000/v3',
+    ...                   consumer_key=consumer_id,
+    ...                   consumer_secret=consumer_secret,
+    ...                   access_key=access_token_key,
+    ...                   access_secret=access_token_secret)
     >>> s = session.Session(auth=a)
 
 

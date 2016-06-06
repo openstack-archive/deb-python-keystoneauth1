@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A fixture to wrap the session constructor for use with Betamax"""
+"""A fixture to wrap the session constructor for use with Betamax."""
 
 from functools import partial
 
@@ -59,8 +59,8 @@ def _construct_session_with_betamax(fixture, session_obj=None):
     record = 'none'
     serializer = None
 
-    if fixture.record:
-        record = 'all'
+    if fixture.record in ['once', 'all', 'new_episodes']:
+        record = fixture.record
 
     if fixture.serializer:
         serializer = fixture.serializer.name

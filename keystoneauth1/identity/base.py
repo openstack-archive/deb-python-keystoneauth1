@@ -61,16 +61,15 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
         data then you should use get_access.
 
         :param session: A session object that can be used for communication.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
 
-        :raises keystonauth.exceptions.InvalidResponse: The response
-                                                           returned wasn't
-                                                           appropriate.
-        :raises keystonauth.exceptions.HttpError: An error from an invalid
-                                                     HTTP response.
+        :raises keystoneauth1.exceptions.response.InvalidResponse:
+            The response returned wasn't appropriate.
+        :raises keystoneauth1.exceptions.http.HttpError:
+            An error from an invalid HTTP response.
 
         :returns: Token access information.
-        :rtype: :py:class:`keystonauth.access.AccessInfo`
+        :rtype: :class:`keystoneauth1.access.AccessInfo`
         """
 
     def get_token(self, session, **kwargs):
@@ -79,10 +78,10 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
         If a valid token is not present then a new one will be fetched.
 
         :param session: A session object that can be used for communication.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
 
-        :raises keystonauth.exceptions.HttpError: An error from an invalid
-                                                     HTTP response.
+        :raises keystoneauth1.exceptions.http.HttpError: An error from an
+                                                         invalid HTTP response.
 
         :return: A valid token.
         :rtype: string
@@ -118,13 +117,13 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
         one will be fetched.
 
         :param session: A session object that can be used for communication.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
 
-        :raises keystonauth.exceptions.HttpError: An error from an invalid
-                                                     HTTP response.
+        :raises keystoneauth1.exceptions.http.HttpError: An error from an
+                                                         invalid HTTP response.
 
         :returns: Valid AccessInfo
-        :rtype: :py:class:`keystonauth.access.AccessInfo`
+        :rtype: :class:`keystoneauth1.access.AccessInfo`
         """
         # Hey Kids! Thread safety is important particularly in the case where
         # a service is creating an admin style plugin that will then proceed
@@ -159,14 +158,14 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
 
     def get_endpoint(self, session, service_type=None, interface=None,
                      region_name=None, service_name=None, version=None,
-                     **kwargs):
+                     allow={}, **kwargs):
         """Return a valid endpoint for a service.
 
         If a valid token is not present then a new one will be fetched using
         the session and kwargs.
 
         :param session: A session object that can be used for communication.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
         :param string service_type: The type of service to lookup the endpoint
                                     for. This plugin will return None (failure)
                                     if service_type is not provided.
@@ -181,9 +180,11 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
                                    (optional)
         :param tuple version: The minimum version number required for this
                               endpoint. (optional)
+        :param dict allow: Extra filters to pass when discovering API
+                           versions. (optional)
 
-        :raises keystonauth.exceptions.HttpError: An error from an invalid
-                                                     HTTP response.
+        :raises keystoneauth1.exceptions.http.HttpError: An error from an
+                                                         invalid HTTP response.
 
         :return: A valid endpoint URL or None if not available.
         :rtype: string or None
@@ -238,7 +239,7 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
                         'Fallback to using that endpoint as the base url.',
                         url)
         else:
-            url = disc.url_for(version)
+            url = disc.url_for(version, **allow)
 
         return url
 
@@ -274,16 +275,16 @@ class BaseIdentityPlugin(plugin.BaseAuthPlugin):
         be needed by users.
 
         :param session: A session object to discover with.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
         :param str url: The url to lookup.
         :param bool authenticated: Include a token in the discovery call.
                                    (optional) Defaults to None (use a token
                                    if a plugin is installed).
 
-        :raises keystonauth.exceptions.DiscoveryFailure: if for some reason
-                                                            the lookup fails.
-        :raises keystonauth.exceptions.HttpError: An error from an invalid
-                                                     HTTP response.
+        :raises keystoneauth1.exceptions.discovery.DiscoveryFailure:
+            if for some reason the lookup fails.
+        :raises keystoneauth1.exceptions.http.HttpError: An error from an
+                                                         invalid HTTP response.
 
         :returns: A discovery object with the results of looking up that URL.
         """

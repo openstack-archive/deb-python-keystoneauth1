@@ -11,6 +11,7 @@
 # under the License.
 
 import abc
+import json
 
 from positional import positional
 import six
@@ -30,7 +31,6 @@ class BaseAuth(base.BaseIdentityPlugin):
     """Identity V3 Authentication Plugin.
 
     :param string auth_url: Identity service endpoint for authentication.
-    :param list auth_methods: A collection of methods to authenticate with.
     :param string trust_id: Trust ID for trust scoping.
     :param string domain_id: Domain ID for domain scoping.
     :param string domain_name: Domain name for domain scoping.
@@ -77,7 +77,7 @@ class BaseAuth(base.BaseIdentityPlugin):
 
     @property
     def has_scope_parameters(self):
-        """Does the plugin have parameters that will create a scoped token"""
+        """Return true if parameters can be used to create a scoped token."""
         return (self.domain_id or self.domain_name or
                 self.project_id or self.project_name or
                 self.trust_id)
@@ -167,6 +167,7 @@ class Auth(BaseAuth):
                             authenticated=False, log=False, **rkwargs)
 
         try:
+            _logger.debug(json.dumps(resp.json()))
             resp_data = resp.json()
         except ValueError:
             raise exceptions.InvalidResponse(response=resp)
@@ -235,7 +236,7 @@ class AuthMethod(object):
         """Return the authentication section of an auth plugin.
 
         :param session: The communication session.
-        :type session: keystonauth.session.Session
+        :type session: keystoneauth1.session.Session
         :param Auth auth: The auth plugin calling the method.
         :param dict headers: The headers that will be sent with the auth
                              request if a plugin needs to add to them.

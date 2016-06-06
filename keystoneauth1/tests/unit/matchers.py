@@ -17,19 +17,18 @@ from testtools import matchers
 
 
 class XMLEquals(object):
-    """Parses two XML documents from strings and compares the results.
-
-    """
+    """Parses two XML documents from strings and compares the results."""
 
     def __init__(self, expected):
         self.expected = expected
 
     def __str__(self):
+        """Return string representation of xml document info."""
         return "%s(%r)" % (self.__class__.__name__, self.expected)
 
     def match(self, other):
         def xml_element_equals(expected_doc, observed_doc):
-            """Tests whether two XML documents are equivalent.
+            """Test whether two XML documents are equivalent.
 
             This is a recursive algorithm that operates on each element in
             the hierarchy. Siblings are sorted before being checked to
@@ -41,7 +40,6 @@ class XMLEquals(object):
             different children.
 
             """
-
             if expected_doc.tag != observed_doc.tag:
                 return False
 
