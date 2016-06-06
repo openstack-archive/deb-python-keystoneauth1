@@ -1,3 +1,10 @@
+python-keystoneauth1 (2.7.0-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Fixed (build-)depends for this release.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 06 Jun 2016 12:50:43 +0000
+
 python-keystoneauth1 (2.4.1-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
