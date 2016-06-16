@@ -5,6 +5,7 @@ python-keystoneauth1 (2.7.0-2) experimental; urgency=medium
 
   [ Thomas Goirand ]
   * Added no intersphinx patch.
+  * Switch to using openstack-pkg-tools (>= 51~) dh helpers.
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 16 Jun 2016 10:33:46 +0200
 
