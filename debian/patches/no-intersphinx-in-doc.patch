@@ -1,0 +1,16 @@
+Description: Disable intersphinx
+ This does network access during build otherwise.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2016-06-16
+
+--- python-keystoneauth1-2.7.0.orig/doc/source/conf.py
++++ python-keystoneauth1-2.7.0/doc/source/conf.py
+@@ -38,7 +38,6 @@ sys.path.insert(0, os.path.abspath(os.pa
+ extensions = ['sphinx.ext.autodoc',
+               'sphinx.ext.todo',
+               'sphinx.ext.coverage',
+-              'sphinx.ext.intersphinx',
+               'oslosphinx',
+              ]
+ 
