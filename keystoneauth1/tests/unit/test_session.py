@@ -13,10 +13,12 @@
 import itertools
 import json
 import logging
+import sys
 import uuid
 
 import mock
 import requests
+import requests.auth
 import six
 from testtools import matchers
 
@@ -26,6 +28,20 @@ from keystoneauth1 import plugin
 from keystoneauth1 import session as client_session
 from keystoneauth1.tests.unit import utils
 from keystoneauth1 import token_endpoint
+
+
+class RequestsAuth(requests.auth.AuthBase):
+
+    def __init__(self, *args, **kwargs):
+        super(RequestsAuth, self).__init__(*args, **kwargs)
+        self.header_name = uuid.uuid4().hex
+        self.header_val = uuid.uuid4().hex
+        self.called = False
+
+    def __call__(self, request):
+        request.headers[self.header_name] = self.header_val
+        self.called = True
+        return request
 
 
 class SessionTests(utils.TestCase):
@@ -90,6 +106,15 @@ class SessionTests(utils.TestCase):
         self.assertRequestBodyIs(json={'hello': 'world'})
 
     def test_user_agent(self):
+        session = client_session.Session()
+        self.stub_url('GET', text='response')
+        resp = session.get(self.TEST_URL)
+
+        self.assertTrue(resp.ok)
+        self.assertRequestHeaderEqual(
+            'User-Agent',
+            '%s %s' % ("run.py", client_session.DEFAULT_USER_AGENT))
+
         custom_agent = 'custom-agent/1.0'
         session = client_session.Session(user_agent=custom_agent)
         self.stub_url('GET', text='response')
@@ -108,6 +133,24 @@ class SessionTests(utils.TestCase):
                            user_agent='overrides-agent')
         self.assertTrue(resp.ok)
         self.assertRequestHeaderEqual('User-Agent', 'overrides-agent')
+
+        # If sys.argv is an empty list, then doesn't fail.
+        with mock.patch.object(sys, 'argv', []):
+            session = client_session.Session()
+            resp = session.get(self.TEST_URL)
+            self.assertTrue(resp.ok)
+            self.assertRequestHeaderEqual(
+                'User-Agent',
+                client_session.DEFAULT_USER_AGENT)
+
+        # If sys.argv[0] is an empty string, then doesn't fail.
+        with mock.patch.object(sys, 'argv', ['']):
+            session = client_session.Session()
+            resp = session.get(self.TEST_URL)
+            self.assertTrue(resp.ok)
+            self.assertRequestHeaderEqual(
+                'User-Agent',
+                client_session.DEFAULT_USER_AGENT)
 
     def test_http_session_opts(self):
         session = client_session.Session(cert='cert.pem', timeout=5,
@@ -319,6 +362,12 @@ class RedirectTests(utils.TestCase):
             self.assertEqual(r.url, s.url)
             self.assertEqual(r.status_code, s.status_code)
 
+    def test_permanent_redirect_308(self):
+        session = client_session.Session()
+        self.setup_redirects(status_code=308)
+        resp = session.get(self.REDIRECT_CHAIN[-2])
+        self.assertResponse(resp)
+
 
 class AuthPlugin(plugin.BaseAuthPlugin):
     """Very simple debug authentication plugin.
@@ -419,7 +468,7 @@ class SessionAuthTests(utils.TestCase):
         auth = AuthPlugin()
         sess = client_session.Session(auth=auth)
         resp = sess.get(self.TEST_URL)
-        self.assertDictEqual(resp.json(), self.TEST_JSON)
+        self.assertEqual(resp.json(), self.TEST_JSON)
 
         self.assertRequestHeaderEqual('X-Auth-Token', AuthPlugin.TEST_TOKEN)
 
@@ -429,7 +478,7 @@ class SessionAuthTests(utils.TestCase):
         auth = AuthPlugin()
         sess = client_session.Session(auth=auth)
         resp = sess.get(self.TEST_URL, authenticated=False)
-        self.assertDictEqual(resp.json(), self.TEST_JSON)
+        self.assertEqual(resp.json(), self.TEST_JSON)
 
         self.assertRequestHeaderEqual('X-Auth-Token', None)
 
@@ -523,20 +572,16 @@ class SessionAuthTests(utils.TestCase):
 
     def test_requests_auth_plugin(self):
         sess = client_session.Session()
+        requests_auth = RequestsAuth()
 
-        requests_auth = object()
+        self.requests_mock.get(self.TEST_URL, text='resp')
 
-        FAKE_RESP = utils.TestResponse({'status_code': 200, 'text': 'resp'})
-        RESP = mock.Mock(return_value=FAKE_RESP)
+        sess.get(self.TEST_URL, requests_auth=requests_auth)
+        last = self.requests_mock.last_request
 
-        with mock.patch.object(sess.session, 'request', RESP) as mocked:
-            sess.get(self.TEST_URL, requests_auth=requests_auth)
-
-            mocked.assert_called_once_with('GET', self.TEST_URL,
-                                           headers=mock.ANY,
-                                           allow_redirects=mock.ANY,
-                                           auth=requests_auth,
-                                           verify=mock.ANY)
+        self.assertEqual(requests_auth.header_val,
+                         last.headers[requests_auth.header_name])
+        self.assertTrue(requests_auth.called)
 
     def test_reauth_called(self):
         auth = CalledAuthPlugin(invalidate=True)
@@ -909,6 +954,56 @@ class AdapterTest(utils.TestCase):
                           client_session.Session().request,
                           self.TEST_URL,
                           'GET')
+
+    def test_additional_headers(self):
+        session_key = uuid.uuid4().hex
+        session_val = uuid.uuid4().hex
+        adapter_key = uuid.uuid4().hex
+        adapter_val = uuid.uuid4().hex
+        request_key = uuid.uuid4().hex
+        request_val = uuid.uuid4().hex
+        text = uuid.uuid4().hex
+
+        url = 'http://keystone.test.com'
+        self.requests_mock.get(url, text=text)
+
+        sess = client_session.Session(
+            additional_headers={session_key: session_val})
+        adap = adapter.Adapter(session=sess,
+                               additional_headers={adapter_key: adapter_val})
+        resp = adap.get(url, headers={request_key: request_val})
+
+        request = self.requests_mock.last_request
+
+        self.assertEqual(resp.text, text)
+        self.assertEqual(session_val, request.headers[session_key])
+        self.assertEqual(adapter_val, request.headers[adapter_key])
+        self.assertEqual(request_val, request.headers[request_key])
+
+    def test_additional_headers_overrides(self):
+        header = uuid.uuid4().hex
+        session_val = uuid.uuid4().hex
+        adapter_val = uuid.uuid4().hex
+        request_val = uuid.uuid4().hex
+
+        url = 'http://keystone.test.com'
+        self.requests_mock.get(url)
+
+        sess = client_session.Session(additional_headers={header: session_val})
+        adap = adapter.Adapter(session=sess)
+
+        adap.get(url)
+        self.assertEqual(session_val,
+                         self.requests_mock.last_request.headers[header])
+
+        adap.additional_headers[header] = adapter_val
+        adap.get(url)
+        self.assertEqual(adapter_val,
+                         self.requests_mock.last_request.headers[header])
+
+        adap.get(url, headers={header: request_val})
+        self.assertEqual(request_val,
+                         self.requests_mock.last_request.headers[header])
 
 
 class TCPKeepAliveAdapterTest(utils.TestCase):

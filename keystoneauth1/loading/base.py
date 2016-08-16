@@ -28,6 +28,11 @@ __all__ = ('get_available_plugin_names',
            'PLUGIN_NAMESPACE')
 
 
+def _auth_plugin_available(ext):
+    """Read the value of available for whether to load this plugin."""
+    return ext.obj.available
+
+
 def get_available_plugin_names():
     """Get the names of all the plugins that are available on the system.
 
@@ -37,7 +42,10 @@ def get_available_plugin_names():
     :returns: A list of names.
     :rtype: frozenset
     """
-    mgr = stevedore.ExtensionManager(namespace=PLUGIN_NAMESPACE)
+    mgr = stevedore.EnabledExtensionManager(namespace=PLUGIN_NAMESPACE,
+                                            check_func=_auth_plugin_available,
+                                            invoke_on_load=True,
+                                            propagate_map_exceptions=True)
     return frozenset(mgr.names())
 
 
@@ -48,9 +56,10 @@ def get_available_plugin_loaders():
               loader as the value.
     :rtype: dict
     """
-    mgr = stevedore.ExtensionManager(namespace=PLUGIN_NAMESPACE,
-                                     invoke_on_load=True,
-                                     propagate_map_exceptions=True)
+    mgr = stevedore.EnabledExtensionManager(namespace=PLUGIN_NAMESPACE,
+                                            check_func=_auth_plugin_available,
+                                            invoke_on_load=True,
+                                            propagate_map_exceptions=True)
 
     return dict(mgr.map(lambda ext: (ext.entry_point.name, ext.obj)))
 
@@ -93,9 +102,27 @@ def get_plugin_options(name):
 @six.add_metaclass(abc.ABCMeta)
 class BaseLoader(object):
 
-    @abc.abstractproperty
+    @property
     def plugin_class(self):
         raise NotImplemented()
+
+    def create_plugin(self, **kwargs):
+        """Create a plugin from the options available for the loader.
+
+        Given the options that were specified by the loader create an
+        appropriate plugin. You can override this function in your loader.
+
+        This used to be specified by providing the plugin_class property and
+        this is still supported, however specifying a property didn't let you
+        choose a plugin type based upon the options that were presented.
+
+        Override this function if you wish to return different plugins based on
+        the options presented, otherwise you can simply provide the
+        plugin_class property.
+
+        Added 2.9
+        """
+        return self.plugin_class(**kwargs)
 
     @abc.abstractmethod
     def get_options(self):
@@ -108,6 +135,18 @@ class BaseLoader(object):
         :rtype: list
         """
         return []
+
+    @property
+    def available(self):
+        """Return if the plugin is available for loading.
+
+        If a plugin is missing dependencies or for some other reason should not
+        be available to the current system it should override this property and
+        return False to exclude itself from the plugin list.
+
+        :rtype: bool
+        """
+        return True
 
     def load_from_options(self, **kwargs):
         """Create a plugin from the arguments retrieved from get_options.
@@ -122,7 +161,7 @@ class BaseLoader(object):
         if missing_required:
             raise exceptions.MissingRequiredOptions(missing_required)
 
-        return self.plugin_class(**kwargs)
+        return self.create_plugin(**kwargs)
 
     def load_from_options_getter(self, getter, **kwargs):
         """Load a plugin from getter function that returns appropriate values.

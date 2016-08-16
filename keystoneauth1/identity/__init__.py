@@ -37,11 +37,23 @@ Password = generic.Password
 Token = generic.Token
 """See :class:`keystoneauth1.identity.generic.Token`"""
 
+V3OidcClientCredentials = oidc.OidcClientCredentials
+"""See :class:`keystoneauth1.identity.v3.oidc.OidcClientCredentials`"""
+
 V3OidcPassword = oidc.OidcPassword
 """See :class:`keystoneauth1.identity.v3.oidc.OidcPassword`"""
 
 V3OidcAuthorizationCode = oidc.OidcAuthorizationCode
 """See :class:`keystoneauth1.identity.v3.oidc.OidcAuthorizationCode`"""
+
+V3OidcAccessToken = oidc.OidcAccessToken
+"""See :class:`keystoneauth1.identity.v3.oidc.OidcAccessToken`"""
+
+V3TOTP = v3.TOTP
+"""See :class:`keystoneauth1.identity.v3.TOTP`"""
+
+V3TokenlessAuth = v3.TokenlessAuth
+"""See :class:`keystoneauth1.identity.v3.TokenlessAuth`"""
 
 __all__ = ('BaseIdentityPlugin',
            'Password',
@@ -51,4 +63,7 @@ __all__ = ('BaseIdentityPlugin',
            'V3Password',
            'V3Token',
            'V3OidcPassword',
-           'V3OidcAuthorizationCode')
+           'V3OidcAuthorizationCode',
+           'V3OidcAccessToken',
+           'V3TOTP',
+           'V3TokenlessAuth')

@@ -15,8 +15,10 @@ import functools
 import hashlib
 import json
 import logging
+import os
 import platform
 import socket
+import sys
 import time
 import uuid
 
@@ -93,6 +95,75 @@ class _StringFormatter(object):
         return value
 
 
+def _determine_calling_package():
+    """Walk the call frames trying to identify what is using this module."""
+    # Create a lookup table mapping file name to module name. The ``inspect``
+    # module does this but is far less efficient. Same story with the
+    # frame walking below.  One could use ``inspect.stack()`` but it
+    # has far more overhead.
+    mod_lookup = dict((m.__file__, n) for n, m in sys.modules.items()
+                      if hasattr(m, '__file__'))
+
+    # NOTE(shaleh): these are not useful because they hide the real
+    # user of the code. debtcollector did not import keystoneauth but
+    # it will show up in the call stack. Similarly we do not want to
+    # report ourselves or keystone client as the user agent. The real
+    # user is the code importing them.
+    ignored = ('debtcollector', 'keystoneauth1', 'keystoneclient')
+
+    i = 0
+    while True:
+        i += 1
+
+        try:
+            # NOTE(shaleh): this is safe in CPython but could break in
+            # other implementations of Python. Yes, the `inspect`
+            # module could be used instead. But it does a lot more
+            # work so it has worse performance.
+            f = sys._getframe(i)
+            try:
+                name = mod_lookup[f.f_code.co_filename]
+                # finds the full name module.foo.bar but all we need
+                # is the module name.
+                name, _, _ = name.partition('.')
+                if name not in ignored:
+                    return name
+            except KeyError:
+                pass  # builtin or the like
+        except ValueError:
+            # hit the bottom of the frame stack
+            break
+
+    return None
+
+
+def _determine_user_agent():
+    """Attempt to programatically generate a user agent string.
+
+    First, look at the name of the process. Return this unless it is in
+    the `ignored` list.  Otherwise, look at the function call stack and
+    try to find the name of the code that invoked this module.
+    """
+    # NOTE(shaleh): mod_wsgi is not any more useful than just
+    # reporting "keystoneauth". Ignore it and perform the package name
+    # heuristic.
+    ignored = ('mod_wsgi', )
+
+    try:
+        name = sys.argv[0]
+    except IndexError:
+        # sys.argv is empty, usually the Python interpreter prevents this.
+        return None
+
+    if not name:
+        return None
+
+    name = os.path.basename(name)
+    if name in ignored:
+        name = _determine_calling_package()
+    return name
+
+
 class Session(object):
     """Maintains client communication state and common functionality.
 
@@ -132,18 +203,22 @@ class Session(object):
                               can be followed by a request. Either an integer
                               for a specific count or True/False for
                               forever/never. (optional, default to 30)
+    :param dict additional_headers: Additional headers that should be attached
+                                    to every request passing through the
+                                    session. Headers of the same name specified
+                                    per request will take priority.
     """
 
     user_agent = None
 
-    _REDIRECT_STATUSES = (301, 302, 303, 305, 307)
+    _REDIRECT_STATUSES = (301, 302, 303, 305, 307, 308)
 
     _DEFAULT_REDIRECT_LIMIT = 30
 
     @positional(2)
     def __init__(self, auth=None, session=None, original_ip=None, verify=True,
                  cert=None, timeout=None, user_agent=None,
-                 redirect=_DEFAULT_REDIRECT_LIMIT):
+                 redirect=_DEFAULT_REDIRECT_LIMIT, additional_headers=None):
 
         self.auth = auth
         self.session = _construct_session(session)
@@ -152,16 +227,21 @@ class Session(object):
         self.cert = cert
         self.timeout = None
         self.redirect = redirect
+        self.additional_headers = additional_headers or {}
 
         if timeout is not None:
             self.timeout = float(timeout)
 
-        # don't override the class variable if none provided
+        # Per RFC 7231 Section 5.5.3, identifiers in a user-agent should be
+        # ordered by decreasing significance.  If a user sets their product
+        # that value will be used. Otherwise we attempt to derive a useful
+        # product value. The value will be prepended it to the KSA version,
+        # requests version, and then the Python version.
+
+        if user_agent is None:
+            user_agent = _determine_user_agent()
+
         if user_agent is not None:
-            # Per RFC 7231 Section 5.5.3, identifiers in a user-agent
-            # should be ordered by decreasing significance.
-            # If a user sets their product, we prepend it to the KSA
-            # version, requests version, and then the Python version.
             self.user_agent = "%s %s" % (user_agent, DEFAULT_USER_AGENT)
 
         self._json = _JSONEncoder()
@@ -428,6 +508,9 @@ class Session(object):
         if json is not None:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = self._json.encode(json)
+
+        for k, v in self.additional_headers.items():
+            headers.setdefault(k, v)
 
         kwargs.setdefault('verify', self.verify)
 
@@ -714,8 +797,7 @@ class Session(object):
         :returns: Authentication headers or None for failure.
         :rtype: :class:`dict`
         """
-        msg = 'An auth plugin is required to fetch connection params'
-        auth = self._auth_required(auth, msg)
+        auth = self._auth_required(auth, 'fetch connection params')
         params = auth.get_connection_params(self, **kwargs)
 
         # NOTE(jamielennox): There needs to be some consensus on what
