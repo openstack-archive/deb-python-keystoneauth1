@@ -1,3 +1,9 @@
+python-keystoneauth1 (2.11.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Tue, 16 Aug 2016 16:27:43 -0400
+
 python-keystoneauth1 (2.7.0-2) experimental; urgency=medium
 
   [ Corey Bryant ]
