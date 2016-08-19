@@ -1,3 +1,9 @@
+python-keystoneauth1 (2.4.1-2) UNRELEASED; urgency=medium
+
+  * Changed pep8 build depends to python-pep8 (Closes: #834742)
+
+ -- Ondřej Nový <onovy@debian.org>  Fri, 19 Aug 2016 23:06:25 +0200
+
 python-keystoneauth1 (2.4.1-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
