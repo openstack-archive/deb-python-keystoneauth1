@@ -1,0 +1,9 @@
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Code-Review+1: Jamie Lennox <jamielennox@gmail.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 04 May 2016 20:21:44 +0000
+Reviewed-on: https://review.openstack.org/307016
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/stable/mitaka
