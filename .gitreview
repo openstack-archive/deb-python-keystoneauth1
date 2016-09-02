@@ -1,4 +1,5 @@
 [gerrit]
 host=review.openstack.org
 port=29418
-project=openstack/keystoneauth.git
+project=openstack/deb-python-keystoneauth1.git
+defaultbranch=debian/newton
