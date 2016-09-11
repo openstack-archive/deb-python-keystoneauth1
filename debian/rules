@@ -11,8 +11,7 @@ override_dh_auto_install:
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
-	echo "Disabled tests until build-depends are available"
-#	pkgos-dh_auto_test
+	pkgos-dh_auto_test
 endif
 
 override_dh_sphinxdoc:

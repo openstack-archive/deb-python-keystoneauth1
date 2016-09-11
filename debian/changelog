@@ -1,4 +1,4 @@
-python-keystoneauth1 (2.12.1-1) UNRELEASED; urgency=medium
+python-keystoneauth1 (2.12.1-1) experimental; urgency=medium
 
   [ Corey Bryant ]
   * New upstream release.
@@ -11,7 +11,14 @@ python-keystoneauth1 (2.12.1-1) UNRELEASED; urgency=medium
   [ Corey Bryant ]
   * New upstream release.
 
- -- Corey Bryant <corey.bryant@canonical.com>  Wed, 31 Aug 2016 14:45:34 -0400
+  [ James Page ]
+  * Demote python{3}-requests-kerberos to Suggests as its an optional
+    dependency.
+
+  [ Thomas Goirand ]
+  * Using OpenStack's Gerrit as VCS URLs.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 12 Sep 2016 01:21:27 +0200
 
 python-keystoneauth1 (2.7.0-2) experimental; urgency=medium
 
