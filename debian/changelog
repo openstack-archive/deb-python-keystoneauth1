@@ -1,3 +1,10 @@
+python-keystoneauth1 (2.12.1-2) UNRELEASED; urgency=medium
+
+  * d/s/options: extend-diff-ignore of .gitreview
+  * d/control: Use correct branch in Vcs-* fields
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 26 Sep 2016 19:10:48 +0200
+
 python-keystoneauth1 (2.12.1-1) experimental; urgency=medium
 
   [ Corey Bryant ]
