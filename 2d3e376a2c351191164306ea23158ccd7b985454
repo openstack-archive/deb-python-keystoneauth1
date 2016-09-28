@@ -1,0 +1,10 @@
+Code-Review+1: Eric Brown <browne@vmware.com>
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sat, 17 Sep 2016 04:50:54 +0000
+Reviewed-on: https://review.openstack.org/365194
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master

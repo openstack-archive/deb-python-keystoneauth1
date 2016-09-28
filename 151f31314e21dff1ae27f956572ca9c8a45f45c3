@@ -1,0 +1,10 @@
+Code-Review+1: Boris Bobrov <bbobrov@mirantis.com>
+Code-Review+2: Lance Bragstad <lbragstad@gmail.com>
+Code-Review+2: Ron De Rose <ronald.de.rose@intel.com>
+Workflow+1: Ron De Rose <ronald.de.rose@intel.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sat, 17 Sep 2016 01:27:16 +0000
+Reviewed-on: https://review.openstack.org/367926
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
