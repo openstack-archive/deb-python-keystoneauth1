@@ -1,0 +1,10 @@
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review+1: Alvaro Lopez Garcia <aloga@ifca.unican.es>
+Code-Review+2: Boris Bobrov <bbobrov@mirantis.com>
+Workflow+1: Boris Bobrov <bbobrov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 09 Nov 2016 17:13:29 +0000
+Reviewed-on: https://review.openstack.org/392198
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
