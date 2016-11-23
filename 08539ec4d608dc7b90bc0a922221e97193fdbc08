@@ -1,0 +1,11 @@
+Code-Review+1: Colleen Murphy <colleen@gazlene.net>
+Code-Review+2: Rodrigo Duarte <rodrigodsousa@gmail.com>
+Code-Review+2: Boris Bobrov <bbobrov@mirantis.com>
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Workflow+1: Jamie Lennox <jamielennox@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 23 Nov 2016 00:19:06 +0000
+Reviewed-on: https://review.openstack.org/400550
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
