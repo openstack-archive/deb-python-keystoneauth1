@@ -1,0 +1,10 @@
+Code-Review+2: Samuel de Medeiros Queiroz <samueldmq@gmail.com>
+Code-Review+2: David Stanek <dstanek@dstanek.com>
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 06 Jan 2017 18:12:48 +0000
+Reviewed-on: https://review.openstack.org/398294
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
