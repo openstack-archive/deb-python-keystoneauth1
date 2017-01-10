@@ -1,0 +1,9 @@
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Code-Review+2: ayoung <ayoung@redhat.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 09 Jan 2017 21:52:35 +0000
+Reviewed-on: https://review.openstack.org/417765
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
