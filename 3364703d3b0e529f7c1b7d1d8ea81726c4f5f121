@@ -1,0 +1,10 @@
+Code-Review+2: Brant Knudson <blk@acm.org>
+Code-Review+1: Gage Hugo <gagehugo@gmail.com>
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 24 Feb 2017 17:49:36 +0000
+Reviewed-on: https://review.openstack.org/437948
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master

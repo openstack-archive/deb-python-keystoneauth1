@@ -1,0 +1,9 @@
+Code-Review+2: Brant Knudson <blk@acm.org>
+Code-Review+2: Morgan Fainberg <morgan.fainberg@gmail.com>
+Workflow+1: Morgan Fainberg <morgan.fainberg@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 08 Mar 2017 21:27:31 +0000
+Reviewed-on: https://review.openstack.org/438788
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
