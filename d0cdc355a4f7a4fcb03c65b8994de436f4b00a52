@@ -1,0 +1,11 @@
+Code-Review+2: Samuel de Medeiros Queiroz <samueldmq@gmail.com>
+Code-Review+2: Steve Martinelli <s.martinelli@gmail.com>
+Code-Review+1: Colleen Murphy <colleen@gazlene.net>
+Code-Review+1: Nisha Yadav <ynisha11@gmail.com>
+Workflow+1: Steve Martinelli <s.martinelli@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sun, 23 Apr 2017 18:23:43 +0000
+Reviewed-on: https://review.openstack.org/452652
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
