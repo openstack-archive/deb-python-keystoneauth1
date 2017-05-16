@@ -1,0 +1,9 @@
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review+2: Samuel de Medeiros Queiroz <samueldmq@gmail.com>
+Workflow+1: Samuel de Medeiros Queiroz <samueldmq@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 16 May 2017 02:31:15 +0000
+Reviewed-on: https://review.openstack.org/463212
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
