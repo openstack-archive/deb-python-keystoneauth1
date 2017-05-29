@@ -1,0 +1,9 @@
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review+2: Monty Taylor <mordred@inaugust.com>
+Workflow+1: Monty Taylor <mordred@inaugust.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 29 May 2017 22:00:11 +0000
+Reviewed-on: https://review.openstack.org/467991
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
