@@ -1,0 +1,10 @@
+Code-Review+2: Morgan Fainberg <morgan.fainberg@gmail.com>
+Code-Review+2: Samuel de Medeiros Queiroz <samueldmq@gmail.com>
+Code-Review+2: Colleen Murphy <colleen@gazlene.net>
+Workflow+1: Morgan Fainberg <morgan.fainberg@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sun, 02 Jul 2017 20:25:34 +0000
+Reviewed-on: https://review.openstack.org/477657
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
