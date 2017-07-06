@@ -1,0 +1,10 @@
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review-1: Deepak Mourya <deepak.mourya@nectechnologies.in>
+Code-Review+2: Boris Bobrov <breton@cynicmansion.ru>
+Workflow+1: Boris Bobrov <breton@cynicmansion.ru>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 06 Jul 2017 05:54:50 +0000
+Reviewed-on: https://review.openstack.org/473745
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
