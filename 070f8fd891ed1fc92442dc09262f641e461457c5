@@ -1,0 +1,10 @@
+Code-Review+2: Jamie Lennox <jamielennox@gmail.com>
+Code-Review+2: Morgan Fainberg <morgan.fainberg@gmail.com>
+Workflow+1: Morgan Fainberg <morgan.fainberg@gmail.com>
+Code-Review+2: Lance Bragstad <lbragstad@gmail.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 14 Jul 2017 22:41:18 +0000
+Reviewed-on: https://review.openstack.org/469863
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
