@@ -1,0 +1,9 @@
+Code-Review+2: Morgan Fainberg <morgan.fainberg@gmail.com>
+Workflow+1: Morgan Fainberg <morgan.fainberg@gmail.com>
+Code-Review+1: Eric Fried <efried@us.ibm.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sat, 22 Jul 2017 15:09:25 +0000
+Reviewed-on: https://review.openstack.org/486276
+Project: openstack/deb-python-keystoneauth1
+Branch: refs/heads/master
