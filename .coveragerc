@@ -1,7 +1,0 @@
-[run]
-branch = True
-source = keystoneauth1
-omit = keystoneauth1/tests/*
-
-[report]
-ignore_errors = True
